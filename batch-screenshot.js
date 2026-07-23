@@ -150,15 +150,14 @@ function getCfgPageBg() {
   return SP?.colors?.pageBg || CFG?.colors?.page_bg || '#f0f4f8';
 }
 function getCfgBottomBarGradient(type) {
-  // 新结构: SP.colors.types[type].bottomBar
+  // 返回纯颜色值（不含 linear-gradient 包装），包装在调用方统一处理
   const typeBar = SP?.colors?.types?.[type]?.bottomBar;
-  if (typeBar) return `linear-gradient(90deg, ${typeBar})`;
-  // 旧结构兼容: SP.colors.bottomBar[type] or SP.colors.bottomBar string
+  if (typeBar) return typeBar;
   const spBar = SP?.colors?.bottomBar;
-  if (typeof spBar === 'object' && spBar[type]) return `linear-gradient(90deg, ${spBar[type]})`;
-  if (typeof spBar === 'string') return `linear-gradient(90deg, ${spBar})`;
+  if (typeof spBar === 'object' && spBar[type]) return spBar[type];
+  if (typeof spBar === 'string') return spBar;
   const barColors = CFG?.colors?.bottom_bar;
-  if (barColors && barColors[type]) return `linear-gradient(90deg, ${barColors[type]})`;
+  if (barColors && barColors[type]) return barColors[type];
   return null;
 }
 function getCfgTemplateDir() {
@@ -365,8 +364,11 @@ function validateConfig(config, articleDir) {
 }
 
 // ─── 类型变量注入函数 ─────────────────────────────────
+function camelToUpperSnake(str) {
+  return str.replace(/([A-Z])/g, '_$1').toUpperCase();
+}
 function injectTypography(vars, type, keys) {
-  for (const k of keys) vars[k + '_FS'] = getTypeTypography(type, k);
+  for (const k of keys) vars[camelToUpperSnake(k) + '_FS'] = getTypeTypography(type, k);
 }
 
 function fillCoverVars(img, type, vars) {
@@ -377,7 +379,7 @@ function fillCoverVars(img, type, vars) {
   vars.BADGES = buildBadgesHTML(img.badges);
   vars.BG_IMAGE = img.bgImage
     ? `background-image: url('${img.bgImage}');`
-    : 'background-image: none';
+    : `background-image: linear-gradient(160deg, #0f172a 0%, #1e293b 35%, #334155 65%, #0f172a 100%);`;
   vars.BRAND_BAR = SP?.brand?.tagline || CFG?.brand?.tagline || '';
   const tc = SP?.colors?.types?.cover || {};
   vars.MAIN_TITLE_COLOR = tc.mainTitle || '#ffffff';

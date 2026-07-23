@@ -20,6 +20,7 @@ output/
 # ─── 截图资产（demo 示范截图） ───
 # 如果想保留 demo 截图作为参考，注释下一行
 demo/*.png
+!demo/cover-bg-default.png
 demo/*.html
 
 # ─── OpenCode 工作目录 ───
