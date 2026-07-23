@@ -11,32 +11,34 @@ node batch-screenshot.js --cfg config.yaml --config demo/content.json
 
 ---
 
-## 系统构成
+## 项目结构
 
 ```
 snapflow/
-│
-├── batch-screenshot.js     # 截图脚本（核心）
+├── batch-screenshot.js     # 截图脚本（核心） ← 截图引擎
 ├── generate-cover-bg.js    # ComfyUI 封面底图生成
 ├── md2content.js           # 稿件 slides → content.json
 ├── templates/              # 7 套 HTML 模板
-├── style-packs/            # 风格包（含出厂默认 + 付费）
-│   └── default.json        # 开箱即用，免付费即可跑 demo
+├── style-packs/            # 风格包
+│   ├── default.json        # 出厂默认（免费，开箱即用）
+│   └── .gitkeep
+├── config.yaml             # 风格包选择器（已 gitignore）
+├── config.yaml.example     # 配置示例
+├── content.json.example    # 内容数据模板（带注释）
+├── SKILL.md                # 截图 Skill 入口
 ├── demo/                   # 可跑通示例
-├── content.json.example    # 内容数据格式（带注释）
-├── config.yaml.example     # 配置模板
 │
-├── writing/   ← 写稿引擎（配合截图使用）
-│   ├── SKILL.md            # OpenCode Skill 入口
+├── writing/                # ← 写稿引擎
+│   ├── SKILL.md            # 写稿 Skill 入口
 │   ├── config.yaml.example
-│   └── workflows/          # 写稿+配图流程
+│   └── workflows/
 │       ├── 02-write-draft.md
 │       └── 03-generate-images.md
 │
 └── Images/                 # 截图输出目录（已 gitignore）
 ```
 
-> **关于 Skill**：本项目包含两个独立的 AI Skill——`snapflow-screenshot`（截图引擎）和 `snapflow-writing`（写稿引擎）。丢进 AI 平台的 skill 目录后会自动识别为两个可用 skill，可单独使用也可组合使用。截图引擎不需要写稿 skill 即可独立运行。
+> **两个 Skill**：本项目包含独立的截图 skill 和写稿 skill。丢进 AI 平台 skill 目录后自动识别为两个可用 skill。截图引擎可独立运行，不依赖写稿 skill。
 
 ---
 
@@ -176,31 +178,6 @@ agent 加载风格包后直接工作，无需额外配置。
 - 标价 **¥49.9**，上新优惠 **¥29.9**
 - 一次购买，持续更新
 - 购买入口：小报童专栏（搜索 "Snapflow 风格包"）
-
-## 项目结构
-
-```
-snapflow/
-├── batch-screenshot.js     # 截图脚本（核心）
-├── generate-cover-bg.js    # ComfyUI 封面底图生成
-├── md2content.js           # 稿件 slides → content.json
-├── config.yaml             # 风格包选择器（已 gitignore）
-├── config.yaml.example     # 配置示例
-├── content.json.example    # 内容数据模板（带注释）
-├── SKILL.md                # 截图 Skill 入口
-├── templates/              # 7 套 HTML 模板
-├── demo/                   # 可跑通示例
-├── Images/                 # 截图输出目录（已 gitignore）
-│
-├── writing/                # 写稿 Skill
-│   ├── SKILL.md
-│   ├── config.yaml.example
-│   └── workflows/
-│
-└── style-packs/            # 风格包
-    ├── default.json         # 出厂默认（免费，开箱即用）
-    └── .gitkeep
-```
 
 ## License
 
