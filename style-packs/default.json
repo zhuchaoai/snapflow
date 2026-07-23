@@ -30,17 +30,17 @@
     "types": {
       "cover": {
         "bottomBar": "#2563eb, #60a5fa, #60a5fa, #2563eb",
-        "mainTitle": "#1e293b",
-        "titleHl": "linear-gradient(135deg, #2563eb, #60a5fa)",
-        "subtitle": "#334155",
-        "tagline": "#64748b",
-        "badgeText": "#64748b",
-        "brandBar": "rgba(0,0,0,0.3)",
-        "badgeBg": "#f8fafc",
-        "badgeBorder": "#e2e8f0",
-        "badgeNameColor": "#475569",
+        "mainTitle": "#ffffff",
+        "titleHl": "linear-gradient(135deg, #60a5fa, #93c5fd)",
+        "subtitle": "#e2e8f0",
+        "tagline": "#94a3b8",
+        "badgeText": "#94a3b8",
+        "brandBar": "rgba(255,255,255,0.35)",
+        "badgeBg": "rgba(255,255,255,0.1)",
+        "badgeBorder": "rgba(255,255,255,0.15)",
+        "badgeNameColor": "#e2e8f0",
         "assetType": "#94a3b8",
-        "dividerGradient": "linear-gradient(90deg, #2563eb, rgba(37,99,235,0.2))"
+        "dividerGradient": "linear-gradient(90deg, #60a5fa, rgba(96,165,250,0.2))"
       },
       "content": {
         "bottomBar": "#3b82f6, #60a5fa, #93c5fd, #3b82f6",
