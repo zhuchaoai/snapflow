@@ -53,40 +53,57 @@ snapflow/
 #### 环境要求
 
 - Node.js 18+
-- Chromium（Playwright）
+- 浏览器（三选一）：
+  - **Microsoft Edge**（推荐）— Windows 预装或自行安装，用 `--channel msedge`
+  - **Google Chrome** — 用 `--channel chrome`
+  - **Playwright Chromium** — `npx playwright install chromium` 自动下载
+
+> 精简版 Windows 可能不含 Edge，请先安装 Edge/Chrome，或使用 Playwright 自带浏览器。
 
 #### 安装
 
+根据你的网络环境和浏览器情况，选一组命令：
+
+**① 网络通畅 + 有 Edge**
+
 ```bash
-# 1. 克隆仓库
-git clone <your-repo-url>
+git clone https://github.com/zhuchaoai/snapflow.git
 cd snapflow
-
-# 2. 安装依赖
 npm install
-
-# 3. 安装 Playwright Chromium 浏览器
-npx playwright install chromium
-
-# 4. 创建配置文件（可选，不配则使用中性出厂默认值）
-cp config.yaml.example config.yaml
-# 编辑 config.yaml 指定风格包路径，或直接用 --style-pack 参数
+npm run demo:edge
 ```
 
-#### 跑通 Demo
+**② 网络通畅 + 有 Chrome**
 
 ```bash
-# 一键（推荐）
-npm run demo
-
-# 或直接指定默认风格包
-node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json
-
-# 可见浏览器调试
-npm run demo:visible
+git clone https://github.com/zhuchaoai/snapflow.git
+cd snapflow
+npm install
+npm run demo:chrome
 ```
 
-输出在 `Images/` 目录下，共 6 张 PNG。无需购买付费风格包即可体验完整功能。
+**③ 国内网络 + 淘宝镜像 + 有 Edge**
+
+```powershell
+git clone https://github.com/zhuchaoai/snapflow.git
+cd snapflow
+npm install --registry https://registry.npmmirror.com
+npm run demo:edge
+```
+
+**④ 国内网络 + 无浏览器（自动下载）**
+
+```powershell
+git clone https://github.com/zhuchaoai/snapflow.git
+cd snapflow
+npm install --registry https://registry.npmmirror.com
+npx playwright install chromium
+npm run demo
+```
+
+> 没有 `git` 命令？点 GitHub 页面绿色的 **Code** → **Download ZIP**，解压后进目录执行相同的命令。
+
+安装完成并跑通 Demo 后，`Images/` 目录下会输出 6 张 PNG。无需购买付费风格包即可体验完整功能。
 
 ### 模板类型
 
