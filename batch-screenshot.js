@@ -337,15 +337,20 @@ function validateConfig(config, articleDir) {
       if (!img.title) errors.push(`✗ ${img.filename}: cover 缺少 title`);
       if (!img.subtitle) errors.push(`✗ ${img.filename}: cover 缺少 subtitle`);
 
-      // 4. bgImage 文件是否存在
+      // 4. bgImage 自动部署
       if (img.bgImage) {
         const bgPath = path.join(outDir, img.bgImage);
         if (!fs.existsSync(bgPath)) {
-          errors.push(`⚠ ${img.filename}: bgImage 文件不存在: ${img.bgImage}（截图后封面无底图）`);
+          const defaultBg = path.resolve(process.cwd(), 'demo/cover-bg-default.png');
+          if (fs.existsSync(defaultBg)) {
+            fs.copyFileSync(defaultBg, bgPath);
+            console.log(`  → 已复制默认底图 -> ${img.bgImage}`);
+          } else {
+            errors.push(`⚠ ${img.filename}: bgImage 文件不存在: ${img.bgImage}`);
+          }
         }
-      } else {
-        errors.push(`⚠ ${img.filename}: cover 缺少 bgImage（截图后封面无底图）`);
       }
+      // 没有 bgImage 字段也没事，渲染时由 fillCoverVars 自动用 CSS 渐变兜底
     }
 
     // 5. 内容页必填字段
