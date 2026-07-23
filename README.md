@@ -64,10 +64,11 @@ snapflow/
 
 根据你的网络环境和浏览器情况，选一组命令：
 
+> **没有 `git`？** 点 GitHub 页面绿色的 **Code** → **Download ZIP**，解压后进目录执行下面的命令即可（省去 `cd snapflow` 前的部分）。
+
 **① 网络通畅 + 有 Edge**
 
 ```bash
-git clone https://github.com/zhuchaoai/snapflow.git
 cd snapflow
 npm install
 npm run demo:edge
@@ -76,7 +77,6 @@ npm run demo:edge
 **② 网络通畅 + 有 Chrome**
 
 ```bash
-git clone https://github.com/zhuchaoai/snapflow.git
 cd snapflow
 npm install
 npm run demo:chrome
@@ -85,7 +85,6 @@ npm run demo:chrome
 **③ 国内网络 + 淘宝镜像 + 有 Edge**
 
 ```powershell
-git clone https://github.com/zhuchaoai/snapflow.git
 cd snapflow
 npm install --registry https://registry.npmmirror.com
 npm run demo:edge
@@ -94,14 +93,13 @@ npm run demo:edge
 **④ 国内网络 + 无浏览器（自动下载）**
 
 ```powershell
-git clone https://github.com/zhuchaoai/snapflow.git
 cd snapflow
 npm install --registry https://registry.npmmirror.com
 npx playwright install chromium
 npm run demo
 ```
 
-> 没有 `git` 命令？点 GitHub 页面绿色的 **Code** → **Download ZIP**，解压后进目录执行相同的命令。
+> 以上命令假设已进到 `snapflow` 目录（`cd snapflow`）。无 `git` 时下 ZIP 解压后直接进目录操作。
 
 安装完成并跑通 Demo 后，`Images/` 目录下会输出 6 张 PNG。无需购买付费风格包即可体验完整功能。
 
