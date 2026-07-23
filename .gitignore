@@ -28,6 +28,7 @@ demo/*.html
 .codegraph/
 
 # ─── 付费内容（不进 git） ───
+docs/
 style-packs/*.json
 !style-packs/.gitkeep
 !style-packs/default.json
