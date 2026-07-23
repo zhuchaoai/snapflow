@@ -197,9 +197,9 @@ snapflow/
 │   ├── config.yaml.example
 │   └── workflows/
 │
-└── style-packs/            # 付费风格包（内容不进 git）
-    ├── .gitkeep
-    └── 筑巢AI-暖金.json     # 示例风格包（已 gitignore）
+└── style-packs/            # 风格包
+    ├── default.json         # 出厂默认（免费，开箱即用）
+    └── .gitkeep
 ```
 
 ## License
