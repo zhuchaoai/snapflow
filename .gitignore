@@ -1,0 +1,40 @@
+# ─── 用户配置（含个人品牌/配色） ───
+config.yaml
+config.local.yaml
+writing/config.yaml
+
+# ─── 依赖 ───
+node_modules/
+
+# ─── 截图输出（运行产物，按需保留） ───
+Images/*.png
+Images/*.jpg
+Images/*.jpeg
+Images/*.webp
+output/
+
+# ─── 临时 HTML（由脚本生成的中间文件） ───
+*.html
+!templates/*.html
+
+# ─── 截图资产（demo 示范截图） ───
+# 如果想保留 demo 截图作为参考，注释下一行
+demo/*.png
+demo/*.html
+
+# ─── OpenCode 工作目录 ───
+.omo/
+.codegraph/
+
+# ─── 付费内容（不进 git） ───
+style-packs/*.json
+!style-packs/.gitkeep
+!style-packs/default.json
+
+# ─── 私有模板（不进 git） ───
+templates-private/
+!templates-private/.gitkeep
+
+# ─── 系统文件 ───
+.DS_Store
+Thumbs.db

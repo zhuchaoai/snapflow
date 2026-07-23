@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1242">
+<title>{{FILENAME}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1242px; height: 1660px;
+  overflow: hidden;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: {{PAGE_BG}};
+}
+/* 底图蒙版 */
+body::before {
+  content: ''; position: absolute; inset: 0;
+  {{BG_IMAGE}}
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.15;
+  pointer-events: none; z-index: 1;
+}
+/* 网格叠加层 */
+.grid-overlay {
+  position: absolute; inset: 0;
+  background: {{GRID_OVERLAY}};
+  pointer-events: none; z-index: 2;
+}
+/* 底部装饰条 */
+body::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: {{BOTTOM_BAR_GRADIENT}};
+  z-index: 3;
+}
+.wrapper {
+  position: relative; z-index: 4;
+  height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+}
+.content { display: flex; flex-direction: column; align-items: center; }
+/* 品牌徽章 — 左上角固定 */
+.brand-badge {
+  position: absolute; top: 40px; left: 40px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 22px; border-radius: 30px;
+  border: 1px solid {{BRAND_BADGE_BORDER}};
+  background: {{BRAND_BADGE_BG}};
+  font-size: 26px; font-weight: 500;
+}
+.brand-badge .icon { font-size: 26px; }
+.brand-badge .name { color: {{BADGE_TEXT_COLOR}}; }
+/* 资产类型标签 */
+.asset-type {
+  font-size: 32px; color: {{ASSET_TYPE_COLOR}}; letter-spacing: 4px;
+  margin-bottom: 24px; font-weight: 400;
+}
+.main-title {
+  font-size: 108px; color: {{MAIN_TITLE_COLOR}}; font-weight: 700;
+  line-height: 1.2; text-align: center; letter-spacing: 2px;
+}
+.main-title .hl {
+  background: {{ACCENT_GRADIENT}};
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.divider { width: 120px; height: 3px; background: {{DIVIDER_GRADIENT}}; margin: 33px auto; }
+.sub-title { font-size: 72px; color: {{SUBTITLE_COLOR}}; font-weight: 500; letter-spacing: 2px; text-align: center; line-height: 1.3; }
+.sub-title .hl { background: {{ACCENT_GRADIENT}}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.tagline { font-size: 39px; color: {{TAGLINE_COLOR}}; letter-spacing: 3px; text-align: center; margin-top: 20px; }
+.badges { display: flex; gap: 60px; margin-top: 48px; font-size: 36px; color: {{BADGE_TEXT_COLOR}}; }
+/* 底部品牌条 */
+.brand-bar {
+  position: absolute; bottom: 40px; left: 0; right: 0;
+  text-align: center;
+  font-size: 28px; color: {{BRAND_BAR_COLOR}};
+  letter-spacing: 6px; font-weight: 300;
+}
+</style>
+</head>
+<body>
+<div class="grid-overlay"></div>
+<div class="wrapper">
+  <div class="brand-badge">
+    <span class="icon">{{BRAND_ICON}}</span>
+    <span class="name">{{BRAND_NAME}}</span>
+  </div>
+  <div class="content">
+    <div class="main-title">
+      {{TITLE}}
+    </div>
+    <div class="divider"></div>
+    <div class="sub-title">
+      {{SUBTITLE}}
+    </div>
+    <div class="tagline">{{TAGLINE}}</div>
+    <div class="badges">
+      {{BADGES}}
+    </div>
+  </div>
+  <div class="brand-bar">{{BRAND_BAR}}</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+{
+  "assetType": "demo",
+  "outputDir": "./Images",
+  "headless": true,
+  "images": [
+    {
+      "type": "cover",
+      "filename": "demo-01-cover",
+      "title": "告别<em>无效努力</em>",
+      "subtitle": "用系统代替意志力",
+      "tagline": "效率提升实战指南",
+      "badges": ["时间管理", "系统思维", "习惯养成"]
+    },
+    {
+      "type": "content",
+      "filename": "demo-02-painpoints",
+      "pageNum": "01",
+      "sectionTitle": "为什么努力却没有结果",
+      "footerText": "方向不对，努力白费",
+      "cards": [
+        {"icon": "①", "title": "任务越做越多", "desc": "每天加班却感觉原地踏步，待办清单永远清不完"},
+        {"icon": "②", "title": "时间碎片化", "desc": "频繁被打断，每次重新进入状态至少浪费 15 分钟"},
+        {"icon": "③", "title": "没有积累效应", "desc": "做完就忘，经验没有沉淀，同样的错误反复犯"}
+      ]
+    },
+    {
+      "type": "text",
+      "filename": "demo-03-action",
+      "pageNum": "02",
+      "sectionTitle": "今晚就能开始的改变",
+      "footerText": "从一个小习惯开始，一周见效",
+      "lines": [
+        "",
+        "每天早晨列出最重要的 3 件事",
+        {"text": "不是 5 件，不是 10 件——就 3 件", "highlight": true},
+        "",
+        "做完一件再开下一件",
+        "",
+        "睡前 5 分钟回顾",
+        {"text": "28 天后，你会有全新的工作方式", "highlight": true}
+      ]
+    },
+    {
+      "type": "compare",
+      "filename": "demo-04-compare",
+      "pageNum": "03",
+      "sectionTitle": "改变前 vs 改变后",
+      "leftHeader": "改变前",
+      "leftSub": "被动响应型",
+      "leftItems": [
+        {"label": "任务优先级", "value": "谁催得急就做谁"},
+        {"label": "工作效率", "value": "平均 70 分钟/任务"},
+        {"label": "完成率", "value": "38%"},
+        {"label": "满意度", "value": "很低"}
+      ],
+      "vsText": "VS",
+      "rightHeader": "改变后",
+      "rightSub": "主动规划型",
+      "rightItems": [
+        {"label": "任务优先级", "value": "按重要性排序"},
+        {"label": "工作效率", "value": "平均 35 分钟/任务"},
+        {"label": "完成率", "value": "82%"},
+        {"label": "满意度", "value": "很高"}
+      ],
+      "summaryText": "区别不在能力，在是否用对了系统"
+    },
+    {
+      "type": "data",
+      "filename": "demo-05-data",
+      "pageNum": "04",
+      "sectionTitle": "坚持 30 天的效果",
+      "footerText": "数据来源：100 人内测统计",
+      "stats": [
+        {"value": "47%", "label": "任务完成率提升", "highlight": false},
+        {"value": "2.3h", "label": "日均节省时间", "highlight": true},
+        {"value": "3×", "label": "复盘习惯养成率", "highlight": false},
+        {"value": "81%", "label": "焦虑感下降", "highlight": false}
+      ]
+    },
+    {
+      "type": "flow",
+      "filename": "demo-06-flow",
+      "pageNum": "05",
+      "sectionTitle": "建立你的 4 步系统",
+      "footerText": "坚持 14 天，形成肌肉记忆",
+      "steps": [
+        {"num": "1", "title": "收集", "desc": "把所有想到的事记到同一个收件箱"},
+        {"num": "2", "title": "筛选", "desc": "按重要性排优先级，选出今天要做的 3 件事"},
+        {"num": "3", "title": "执行", "desc": "专注做完一件再换下一件，关闭所有通知"},
+        {"num": "4", "title": "复盘", "desc": "睡前记录完成情况，总结一个问题"}
+      ]
+    }
+  ]
+}

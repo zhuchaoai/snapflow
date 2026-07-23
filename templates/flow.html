@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1242">
+<title>{{FILENAME}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1242px; height: 1660px;
+  overflow: hidden;
+  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: {{PAGE_BG}};
+}
+body::before {
+  content: ''; position: absolute; inset: 0;
+  background: {{GRID_OVERLAY}}
+  pointer-events: none; z-index: 1;
+}
+body::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 4px;
+  background: {{BOTTOM_BAR_GRADIENT}};
+  z-index: 2;
+}
+.wrapper {
+  position: relative; z-index: 3;
+  height: 100%; display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 48px 56px 60px;
+}
+.brand {
+  position: absolute; top: 24px; left: 36px; z-index: 5;
+  font-size: 22px; color: rgba(255,255,255,0.35);
+  display: flex; align-items: center; gap: 6px;
+}
+.page-num {
+  position: absolute; top: 50px; right: 56px;
+  font-size: {{PAGE_NUM_FS}}; font-weight: 500;
+  color: {{PAGE_NUM_COLOR}};
+}
+.section-title {
+  font-size: {{SECTION_TITLE_FS}}; font-weight: 700; line-height: 1.3;
+  color: {{SECTION_TITLE_COLOR}};
+  margin-top: 40px;
+}
+.steps-container {
+  position: relative; flex: 1;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 10px 40px 10px 70px;
+  margin-top: 20px;
+}
+.steps-container::before {
+  content: ''; position: absolute; top: 40px; bottom: 40px; left: 103px;
+  width: 2px;
+  background: {{STEP_LINE_GRADIENT}};
+}
+.step { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 24px; position: relative; }
+.step:last-child { margin-bottom: 0; }
+.step-icon {
+  width: 56px; height: 56px; border-radius: 28px; flex-shrink: 0;
+  background: {{STEP_CIRCLE_BG}};
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; color: #ffffff; font-weight: 700;
+  box-shadow: 0 3px 12px {{ACCENT_GLOW}};
+  position: relative; z-index: 2;
+}
+.step-title { font-size: 38px; font-weight: 600; color: {{STEP_TITLE_COLOR}}; }
+.step-desc { font-size: 28px; color: {{STEP_DESC_COLOR}}; margin-top: 4px; line-height: 1.4; }
+.step-arrow {
+  text-align: center; font-size: 28px; color: {{STEP_ARROW_COLOR}};
+  height: 32px; line-height: 32px; margin-left: 66px; margin-bottom: 4px;
+}
+.footer-text {
+  margin-top: auto; text-align: center;
+  font-size: 26px; color: {{FOOTER_COLOR}}; letter-spacing: 4px;
+  padding-top: 24px;
+  border-top: 1px solid {{FOOTER_BORDER_COLOR}};
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="brand">{{BRAND_ICON}} {{BRAND_NAME}}</div>
+  <div class="page-num">{{PAGE_NUM}}</div>
+  <div class="section-title">{{SECTION_TITLE}}</div>
+  <div class="steps-container">
+    {{STEP_ITEMS_HTML}}
+  </div>
+  <div class="footer-text">{{FOOTER_TEXT}}</div>
+</div>
+</body>
+</html>

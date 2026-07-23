@@ -1,0 +1,24 @@
+# ============================================================
+# Content Publisher — 用户配置入口（示例文件）
+# 复制为 config.yaml 后修改为你自己的值
+# ============================================================
+
+# --- 基础路径 ---
+# content_base: "./content"          # 稿件存放目录（按你的习惯设置）
+# template_dir: "./templates"        # 配图模板目录
+
+# --- 写作模型 ---
+# writing_model: "deepseek/deepseek-v4-flash"
+
+# --- 内容预设 ---
+style_presets:
+  default:
+    emoji_limit: 3                   # 每篇 emoji 数量上限
+    word_count_min: 300
+    word_count_max: 500
+    tone: "分享而非教导，展示思考过程而非经验堆砌"
+
+# --- 配图设置 ---
+image:
+  width: 1242
+  height: 1660

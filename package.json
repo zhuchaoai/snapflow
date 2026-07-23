@@ -1,0 +1,26 @@
+{
+  "name": "snapflow",
+  "version": "1.0.0",
+  "description": "内容自动化工作流 — 写稿+配图一站式工具",
+  "private": false,
+  "license": "MIT",
+  "author": "numboo",
+  "keywords": [
+    "screenshot",
+    "content-automation",
+    "playwright",
+    "social-media",
+    "template"
+  ],
+  "scripts": {
+    "demo": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json",
+    "demo:visible": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --headless false",
+    "demo:edge": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --channel msedge",
+    "demo:chrome": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --channel chrome",
+    "start": "node batch-screenshot.js"
+  },
+  "dependencies": {
+    "playwright": "^1.50.0",
+    "js-yaml": "^4.1.0"
+  }
+}

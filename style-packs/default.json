@@ -1,0 +1,191 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "channel": "default",
+    "description": "出厂默认风格包 — 中性浅色主题，开箱即用。用于 demo 跑通和功能体验。"
+  },
+  "pack": {
+    "name": "出厂默认 · 浅色",
+    "version": "1.0.0",
+    "author": "Snapflow",
+    "description": "中性浅色风格，不依赖付费风格包即可体验完整截图功能。"
+  },
+  "brand": {
+    "name": "Snapflow",
+    "tagline": "内容自动化工作流"
+  },
+  "colors": {
+    "pageBg": "#f0f4f8",
+    "gridOverlay": {
+      "color": "rgba(0,0,0,0.03)",
+      "size": "50px"
+    },
+    "tokens": {
+      "textBody": "#334155",
+      "textMuted": "#94a3b8",
+      "textLabel": "#64748b",
+      "brandColor": "rgba(0,0,0,0.2)",
+      "footerBorder": "rgba(0,0,0,0.06)"
+    },
+    "types": {
+      "cover": {
+        "bottomBar": "#2563eb, #60a5fa, #60a5fa, #2563eb",
+        "mainTitle": "#1e293b",
+        "titleHl": "linear-gradient(135deg, #2563eb, #60a5fa)",
+        "subtitle": "#334155",
+        "tagline": "#64748b",
+        "badgeText": "#64748b",
+        "brandBar": "rgba(0,0,0,0.3)",
+        "badgeBg": "#f8fafc",
+        "badgeBorder": "#e2e8f0",
+        "badgeNameColor": "#475569",
+        "assetType": "#94a3b8",
+        "dividerGradient": "linear-gradient(90deg, #2563eb, rgba(37,99,235,0.2))"
+      },
+      "content": {
+        "bottomBar": "#3b82f6, #60a5fa, #93c5fd, #3b82f6",
+        "pageNum": "#3b82f6",
+        "sectionTitle": "#1e293b",
+        "cardBorder": "rgba(0,0,0,0.08)",
+        "cardBg": "#ffffff",
+        "cardTitle": "#1e293b",
+        "cardDesc": "#64748b",
+        "accent": "#3b82f6"
+      },
+      "showcase": {
+        "bottomBar": "#10b981, #34d399, #6ee7b7, #10b981",
+        "pageNum": "#10b981",
+        "sectionTitle": "#1e293b",
+        "cardBorder": "rgba(0,0,0,0.08)",
+        "cardBg": "#ffffff",
+        "cardTitle": "#1e293b",
+        "cardDesc": "#64748b",
+        "accent": "#10b981"
+      },
+      "text": {
+        "bottomBar": "#8b5cf6, #a78bfa, #c4b5fd, #8b5cf6",
+        "pageNum": "#8b5cf6",
+        "sectionTitle": "#1e293b",
+        "textBorder": "rgba(0,0,0,0.08)",
+        "textBg": "rgba(0,0,0,0.03)",
+        "textColor": "#334155",
+        "textHighlightColor": "#7c3aed",
+        "accent": "#8b5cf6"
+      },
+      "data": {
+        "bottomBar": "#f59e0b, #fbbf24, #fcd34d, #f59e0b",
+        "pageNum": "#f59e0b",
+        "sectionTitle": "#1e293b",
+        "statBorder": "#e2e8f0",
+        "statBg": "#ffffff",
+        "statHighlightBorder": "#f59e0b",
+        "statHighlightBg": "linear-gradient(135deg, #fef3c7, #fffbeb)",
+        "statValueColor": "#1e293b",
+        "statHighlightValueColor": "#d97706",
+        "statLabelColor": "#64748b",
+        "accent": "#f59e0b"
+      },
+      "flow": {
+        "bottomBar": "#3b82f6, #60a5fa, #93c5fd, #3b82f6",
+        "pageNum": "#3b82f6",
+        "sectionTitle": "#1e293b",
+        "stepCircleBg": "linear-gradient(135deg, #3b82f6, #60a5fa)",
+        "stepCircleBorder": "#60a5fa",
+        "stepTitleColor": "#1e293b",
+        "stepDescColor": "#64748b",
+        "stepArrowColor": "#94a3b8",
+        "accent": "#3b82f6"
+      },
+      "compare": {
+        "left": {
+          "bottomBar": "#ef4444, #f87171, #fca5a5, #ef4444",
+          "pageNum": "#ef4444",
+          "sectionTitle": "#1e293b",
+          "headerBg": "rgba(239,68,68,0.06)",
+          "headerBorder": "rgba(239,68,68,0.2)",
+          "headerText": "#ef4444",
+          "headerSub": "#334155",
+          "cardBorder": "rgba(0,0,0,0.08)",
+          "cardBg": "#ffffff",
+          "cardLabel": "#94a3b8",
+          "cardValue": "#334155",
+          "itemAccent": "#ef4444"
+        },
+        "right": {
+          "bottomBar": "#10b981, #34d399, #6ee7b7, #10b981",
+          "pageNum": "#10b981",
+          "sectionTitle": "#1e293b",
+          "headerBg": "rgba(16,185,129,0.06)",
+          "headerBorder": "rgba(16,185,129,0.2)",
+          "headerText": "#10b981",
+          "headerSub": "#334155",
+          "cardBorder": "rgba(0,0,0,0.08)",
+          "cardBg": "#ffffff",
+          "cardLabel": "#94a3b8",
+          "cardValue": "#334155",
+          "itemAccent": "#10b981"
+        }
+      }
+    }
+  },
+  "typography": {
+    "cover": {
+      "title": "96px",
+      "subtitle": "64px",
+      "tagline": "36px",
+      "badge": "32px",
+      "brandBar": "26px",
+      "brandBadge": "24px",
+      "assetType": "28px"
+    },
+    "content": {
+      "pageNum": "42px",
+      "sectionTitle": "42px",
+      "cardTitle": "45px",
+      "cardDesc": "33px",
+      "iconSize": "54px",
+      "cardRadius": "16px"
+    },
+    "showcase": {
+      "pageNum": "42px",
+      "sectionTitle": "42px",
+      "cardTitle": "32px",
+      "cardDesc": "26px",
+      "cardRadius": "14px"
+    },
+    "text": {
+      "pageNum": "42px",
+      "sectionTitle": "42px",
+      "line": "40px",
+      "highlightLine": "42px"
+    },
+    "data": {
+      "pageNum": "42px",
+      "sectionTitle": "42px",
+      "statValue": "78px",
+      "statLabel": "28px"
+    },
+    "flow": {
+      "pageNum": "42px",
+      "sectionTitle": "42px",
+      "stepTitle": "38px",
+      "stepDesc": "28px",
+      "stepNum": "26px"
+    },
+    "compare": {
+      "sectionTitle": "42px",
+      "headerLabel": "34px",
+      "headerSub": "24px",
+      "itemLabel": "26px",
+      "itemValue": "32px",
+      "vsText": "20px",
+      "summaryText": "28px"
+    }
+  },
+  "screenshot": {
+    "width": 1242,
+    "height": 1660,
+    "maxShowcaseItems": 2,
+    "headless": true
+  }
+}

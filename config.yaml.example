@@ -1,0 +1,16 @@
+# ============================================================
+# Screenshot Workflow — 风格包选择器（示例文件）
+# 使用方法：
+#   1. 复制此文件为 config.yaml
+#   2. 指定你使用的风格包路径
+#   3. 运行: node batch-screenshot.js --cfg config.yaml --config content.json
+#   4. 所有品牌、配色、路径等配置都由风格包提供
+#
+# 也可以直接指定 --style-pack 参数跳过此文件：
+#   node batch-screenshot.js --style-pack style-packs/xxx.json --config content.json
+# ============================================================
+
+# 风格包路径（相对于脚本工作目录）
+# 风格包是单一配置来源，包含：品牌、配色、路径、截图参数、写稿规则等
+# 不指定时使用脚本内置的中性出厂默认值
+style_pack: style-packs/xxx.json
