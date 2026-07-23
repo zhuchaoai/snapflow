@@ -36,6 +36,8 @@ snapflow/
 └── Images/                 # 截图输出目录（已 gitignore）
 ```
 
+> **关于 Skill**：本项目包含两个独立的 AI Skill——`snapflow-screenshot`（截图引擎）和 `snapflow-writing`（写稿引擎）。丢进 AI 平台的 skill 目录后会自动识别为两个可用 skill，可单独使用也可组合使用。截图引擎不需要写稿 skill 即可独立运行。
+
 ---
 
 ## 截图引擎（独立可用）
