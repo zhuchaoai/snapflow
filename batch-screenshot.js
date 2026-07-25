@@ -583,6 +583,7 @@ function generateHTML(config, articleDir, onlyFiles) {
 
     // 公共变量（所有类型通用）
     vars.BRAND_NAME = getCfgBrandName();
+    vars.FONT_FAMILY = SP?.typography?.fontFamily || CFG?.typography?.font_family || '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
     vars.PAGE_BG = getCfgPageBg();
     const bottomBarGradient = getCfgBottomBarGradient(type);
     vars.BOTTOM_BAR_GRADIENT = bottomBarGradient

@@ -129,6 +129,7 @@
     }
   },
   "typography": {
+    "fontFamily": "-apple-system, \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
     "cover": {
       "title": "96px",
       "subtitle": "64px",

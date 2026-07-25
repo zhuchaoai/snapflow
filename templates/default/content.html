@@ -9,7 +9,7 @@
 html, body {
   width: 1242px; height: 1660px;
   overflow: hidden;
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: {{FONT_FAMILY}};
   background: {{PAGE_BG}};
 }
 body::before {
@@ -31,7 +31,7 @@ body::after {
 }
 .brand {
   position: absolute; top: 24px; left: 36px; z-index: 5;
-  font-size: 22px; color: rgba(255,255,255,0.35);
+  font-size: 22px; color: {{BRAND_COLOR}};
   display: flex; align-items: center; gap: 6px;
 }
 .page-num {

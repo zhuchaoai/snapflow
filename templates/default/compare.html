@@ -9,7 +9,7 @@
 html, body {
   width: 1242px; height: 1660px;
   overflow: hidden;
-  font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-family: {{FONT_FAMILY}};
   background: {{PAGE_BG}};
 }
 body::before {
@@ -31,7 +31,7 @@ body::after {
 }
 .brand {
   position: absolute; top: 24px; left: 36px; z-index: 5;
-  font-size: 22px; color: rgba(255,255,255,0.35);
+  font-size: 22px; color: {{BRAND_COLOR}};
   display: flex; align-items: center; gap: 6px;
 }
 .pill {
@@ -73,7 +73,11 @@ body::after {
 .col-item .item-label { font-size: 26px; color: {{CARD_DESC_COLOR}}; font-weight: 500; margin-bottom: 2px; }
 .col-item .item-value { font-size: 32px; color: {{CARD_TITLE_COLOR}}; font-weight: 600; }
 .col-left .col-item { border-left: 3px solid {{COMPARE_LEFT_ACCENT}}; }
+.col-left .col-item .item-label { color: {{COMPARE_LEFT_CARD_LABEL}}; }
+.col-left .col-item .item-value { color: {{COMPARE_LEFT_CARD_VALUE}}; }
 .col-right .col-item { border-left: 3px solid {{COMPARE_RIGHT_ACCENT}}; }
+.col-right .col-item .item-label { color: {{COMPARE_RIGHT_CARD_LABEL}}; }
+.col-right .col-item .item-value { color: {{COMPARE_RIGHT_CARD_VALUE}}; }
 .vs-col {
   display: flex; flex-direction: column; align-items: center;
   width: 70px; flex-shrink: 0;
