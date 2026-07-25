@@ -16,7 +16,7 @@
  *   --dir ./Images                 HTML 目录（direct 模式必填）
  *   --files 01-cover,02-painpoint 只处理指定文件（不含扩展名，修改模式用）
  *   --headless true|false          是否无头模式（默认 true）
- *   --template-dir templates-private  模板目录（默认 templates/，专用模板用此切换）
+ *   --template-dir templates/premium  模板目录（默认 templates/default/，专用模板用此切换）
  */
 
 const { chromium } = require('playwright');
@@ -45,11 +45,16 @@ const ONLY_FILES = hasFlag('--files')
 
 // ─── 模板目录（相对工作目录，优先使用 CLI 参数，其次 CFG） ───
 const CLI_TEMPLATE_DIR = getArg('--template-dir', null);
-const DEFAULT_TEMPLATE_DIR = path.resolve(process.cwd(), 'templates');
+const DEFAULT_TEMPLATE_DIR = path.resolve(process.cwd(), 'templates', 'default');
 function resolveTemplateDir() {
-  if (CLI_TEMPLATE_DIR) return path.resolve(process.cwd(), CLI_TEMPLATE_DIR);
-  const cfgDir = getCfgTemplateDir();
-  if (cfgDir) return path.resolve(process.cwd(), cfgDir);
+  let dir = null;
+  if (CLI_TEMPLATE_DIR) dir = path.resolve(process.cwd(), CLI_TEMPLATE_DIR);
+  else {
+    const cfgDir = getCfgTemplateDir();
+    if (cfgDir) dir = path.resolve(process.cwd(), cfgDir);
+  }
+  if (dir && fs.existsSync(dir)) return dir;
+  if (dir) console.warn(`  ⚠ 模板目录不存在: ${dir}，使用默认模板`);
   return DEFAULT_TEMPLATE_DIR;
 }
 
@@ -102,7 +107,7 @@ const FALLBACK_TYPOGRAPHY = {
   text: { pageNum: '28px', sectionTitle: '52px', line: '40px', highlightLine: '42px' },
   data: { pageNum: '28px', sectionTitle: '52px', statValue: '78px', statLabel: '28px' },
   flow: { pageNum: '28px', sectionTitle: '52px', stepTitle: '38px', stepDesc: '28px', stepNum: '26px' },
-  compare: { sectionTitle: '52px', headerLabel: '34px', headerSub: '24px', itemLabel: '26px', itemValue: '32px', vsText: '20px', summaryText: '28px' },
+  compare: { pageNum: '42px', sectionTitle: '52px', headerLabel: '34px', headerSub: '24px', itemLabel: '26px', itemValue: '32px', vsText: '20px', summaryText: '28px' },
 };
 
 // ─── Style Pack 加载 ──────────────────────────────────
@@ -144,7 +149,7 @@ function loadConfig(cfgPath) {
 
 // 从风格包 > CFG > 默认值 获取配置（优先级从左到右）
 function getCfgBrandName() {
-  return SP?.brand?.name || CFG?.brand?.name || '';
+  return SP?.brand?.name || CFG?.brand?.name || 'Snapflow';
 }
 function getCfgPageBg() {
   return SP?.colors?.pageBg || CFG?.colors?.page_bg || '#f0f4f8';
@@ -384,20 +389,21 @@ function fillCoverVars(img, type, vars) {
   vars.BADGES = buildBadgesHTML(img.badges);
   vars.BG_IMAGE = img.bgImage
     ? `background-image: url('${img.bgImage}');`
-    : `background-image: linear-gradient(160deg, #0f172a 0%, #1e293b 35%, #334155 65%, #0f172a 100%);`;
-  vars.BRAND_BAR = SP?.brand?.tagline || CFG?.brand?.tagline || '';
+    : `background: transparent;`;
+  vars.BRAND_BAR = SP?.brand?.tagline || CFG?.brand?.tagline || '内容自动化工作流';
   const tc = SP?.colors?.types?.cover || {};
-  vars.MAIN_TITLE_COLOR = tc.mainTitle || '#ffffff';
-  vars.SUBTITLE_COLOR = tc.subtitle || '#ffffff';
-  vars.TAGLINE_COLOR = tc.tagline || '#f0e4d8';
-  vars.BADGE_TEXT_COLOR = tc.badgeText || 'rgba(255,255,255,0.65)';
-  vars.BRAND_BAR_COLOR = tc.brandBar || 'rgba(255,215,0,0.5)';
-  vars.ASSET_TYPE_COLOR = tc.assetType || 'rgba(255,255,255,0.3)';
-  vars.BRAND_BADGE_BG = tc.badgeBg || 'rgba(255,255,255,0.06)';
-  vars.BRAND_BADGE_BORDER = tc.badgeBorder || 'rgba(255,255,255,0.12)';
-  vars.BADGE_TEXT_COLOR = tc.badgeNameColor || 'rgba(255,255,255,0.7)';
-  vars.DIVIDER_GRADIENT = tc.dividerGradient || 'linear-gradient(90deg, #ffd700, rgba(255,215,0,0.3))';
-  vars.ACCENT_GRADIENT = tc.titleHl || 'linear-gradient(135deg, #ffd700, #f5e6d0)';
+  vars.MAIN_TITLE_COLOR = tc.mainTitle || '#1e293b';
+  vars.SUBTITLE_COLOR = tc.subtitle || '#334155';
+  vars.TAGLINE_COLOR = tc.tagline || '#64748b';
+  vars.BADGE_TEXT_COLOR = tc.badgeText || '#64748b';
+  vars.BRAND_BAR_COLOR = tc.brandBar || 'rgba(30,41,59,0.5)';
+  vars.ASSET_TYPE_COLOR = tc.assetType || '#94a3b8';
+  vars.BRAND_BADGE_BG = tc.badgeBg || 'rgba(255,255,255,0.7)';
+  vars.BRAND_BADGE_BORDER = tc.badgeBorder || 'rgba(0,0,0,0.08)';
+  vars.BADGE_TEXT_COLOR = tc.badgeNameColor || '#334155';
+  vars.DIVIDER_GRADIENT = tc.dividerGradient || 'linear-gradient(90deg, #2563eb, rgba(37,99,235,0.2))';
+  vars.ACCENT_GRADIENT = tc.titleHl || 'linear-gradient(135deg, #2563eb, #60a5fa)';
+  vars.COVER_ACCENT_COLOR = tc.accent || '#f5a623';
   injectTypography(vars, 'cover', ['title', 'subtitle', 'tagline', 'badge', 'brandBar', 'brandBadge', 'assetType']);
 }
 
@@ -437,7 +443,7 @@ function fillTextVars(img, type, vars) {
 function fillCompareVars(img, type, vars) {
   const colors = img.colors || {};
   vars.PILL_NAME = img.pill || '';
-  vars.COMPARE_PAGE_NUM = img.comparePageNum || '01';
+  vars.COMPARE_PAGE_NUM = img.comparePageNum || img.pageNum || '01';
   vars.COMPARE_SECTION_TITLE = img.sectionTitle || '';
   vars.PILL_BORDER = colors.pillBorder || getTypeColor(type, 'pillBorder');
   vars.PILL_BG = colors.pillBg || getTypeColor(type, 'pillBg');
@@ -461,18 +467,27 @@ function fillCompareVars(img, type, vars) {
   vars.COMPARE_LEFT_HEADER_BG = colors.compareLeftHeaderBg || L.headerBg || 'rgba(232,96,76,0.06)';
   vars.COMPARE_LEFT_HEADER_BORDER = colors.compareLeftHeaderBorder || L.headerBorder || 'rgba(232,96,76,0.25)';
   vars.COMPARE_LEFT_HEADER_TEXT = colors.compareLeftHeaderText || L.headerText || '#e8604c';
-  vars.COMPARE_LEFT_HEADER_SUB = colors.compareLeftHeaderSub || L.headerSub || '#f0dcc8';
+  vars.COMPARE_LEFT_HEADER_SUB = colors.compareLeftHeaderSub || L.headerSub || '#334155';
   vars.COMPARE_RIGHT_HEADER_BG = colors.compareRightHeaderBg || R.headerBg || 'rgba(64,184,144,0.06)';
   vars.COMPARE_RIGHT_HEADER_BORDER = colors.compareRightHeaderBorder || R.headerBorder || 'rgba(64,184,144,0.25)';
   vars.COMPARE_RIGHT_HEADER_TEXT = colors.compareRightHeaderText || R.headerText || '#40b890';
-  vars.COMPARE_RIGHT_HEADER_SUB = colors.compareRightHeaderSub || R.headerSub || '#f0dcc8';
+  vars.COMPARE_RIGHT_HEADER_SUB = colors.compareRightHeaderSub || R.headerSub || '#334155';
   vars.COMPARE_LEFT_ACCENT = colors.compareLeftAccent || L.itemAccent || '#e8604c';
   vars.COMPARE_RIGHT_ACCENT = colors.compareRightAccent || R.itemAccent || '#40b890';
-  vars.CARD_BG_COLOR = colors.cardBg || L.cardBg || R.cardBg || 'rgba(255,255,255,0.08)';
-  vars.CARD_BORDER_COLOR = colors.cardBorder || L.cardBorder || R.cardBorder || 'rgba(255,255,255,0.15)';
-  vars.CARD_DESC_COLOR = colors.cardDesc || L.cardLabel || R.cardLabel || 'rgba(255,255,255,0.4)';
-  vars.CARD_TITLE_COLOR = colors.cardTitle || L.cardValue || R.cardValue || '#f0dcc8';
-  injectTypography(vars, type, ['sectionTitle', 'headerLabel', 'headerSub', 'itemLabel', 'itemValue', 'vsText', 'summaryText']);
+  // 左右列专属卡片色彩（用于对比页区分前后）
+  vars.COMPARE_LEFT_CARD_BG = colors.compareLeftCardBg || L.cardBg || 'rgba(200,103,75,0.08)';
+  vars.COMPARE_LEFT_CARD_BORDER = colors.compareLeftCardBorder || L.cardBorder || 'rgba(200,103,75,0.2)';
+  vars.COMPARE_LEFT_CARD_LABEL = colors.compareLeftCardLabel || L.cardLabel || '#d09070';
+  vars.COMPARE_LEFT_CARD_VALUE = colors.compareLeftCardValue || L.cardValue || '#f5b090';
+  vars.COMPARE_RIGHT_CARD_BG = colors.compareRightCardBg || R.cardBg || 'rgba(125,155,122,0.08)';
+  vars.COMPARE_RIGHT_CARD_BORDER = colors.compareRightCardBorder || R.cardBorder || 'rgba(125,155,122,0.2)';
+  vars.COMPARE_RIGHT_CARD_LABEL = colors.compareRightCardLabel || R.cardLabel || '#90c8a8';
+  vars.COMPARE_RIGHT_CARD_VALUE = colors.compareRightCardValue || R.cardValue || '#f0f5ee';
+  vars.CARD_BG_COLOR = colors.cardBg || L.cardBg || R.cardBg || '#ffffff';
+  vars.CARD_BORDER_COLOR = colors.cardBorder || L.cardBorder || R.cardBorder || 'rgba(0,0,0,0.08)';
+  vars.CARD_DESC_COLOR = colors.cardDesc || L.cardLabel || R.cardLabel || '#64748b';
+  vars.CARD_TITLE_COLOR = colors.cardTitle || L.cardValue || R.cardValue || '#1e293b';
+  injectTypography(vars, type, ['sectionTitle', 'headerLabel', 'headerSub', 'itemLabel', 'itemValue', 'vsText', 'summaryText', 'pageNum']);
 }
 
 function fillDataVars(img, type, vars) {
@@ -503,6 +518,8 @@ function fillFlowVars(img, type, vars) {
   vars.STEP_TITLE_COLOR = colors.stepTitleColor || getTypeColor(type, 'stepTitleColor');
   vars.STEP_DESC_COLOR = colors.stepDescColor || getTypeColor(type, 'stepDescColor');
   vars.STEP_ARROW_COLOR = colors.stepArrowColor || getTypeColor(type, 'stepArrowColor');
+  const _arrowRgb = hexToRgb('#f5a623');
+  vars.STEP_ARROW_GRADIENT = `linear-gradient(180deg, rgba(${_arrowRgb.join(',')},0), rgba(${_arrowRgb.join(',')},0.9))`;
   vars.STEP_ITEMS_HTML = buildStepsHTML(img.steps);
   injectTypography(vars, type, ['pageNum', 'sectionTitle', 'stepTitle', 'stepDesc', 'stepNum']);
   const a = getTypeColor(type, 'accent');

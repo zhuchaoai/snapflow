@@ -55,6 +55,8 @@ body::after {
   content: ''; position: absolute; top: 40px; bottom: 40px; left: 103px;
   width: 2px;
   background: {{STEP_LINE_GRADIENT}};
+  z-index: 0;
+  border-radius: 1px;
 }
 .step { display: flex; align-items: flex-start; gap: 24px; margin-bottom: 24px; position: relative; }
 .step:last-child { margin-bottom: 0; }

@@ -30,7 +30,7 @@ compatibility: opencode
 - 浏览器（二选一）：
   - Playwright Chromium（`npx playwright install chromium`）— 推荐，自动下载
   - 系统已安装的 Chrome 或 Edge — 国内网络免下载，截图脚本加 `--channel msedge` 或 `--channel chrome`
-- 本目录下的 `templates/` 和 `config.yaml`（可选，用于注入品牌/配色）
+- 本目录下的 `templates/default/`（默认模板集）和 `config.yaml`（可选，用于注入品牌/配色）
 
 ---
 
@@ -335,7 +335,7 @@ sleep(35000) → get_job_status(prompt_id)
 | `config.yaml` | 用户配置（品牌/配色/路径，已 gitignore） |
 | `config.yaml.example` | 配置模板 |
 | `content.json.example` | content.json 示例（带注释） |
-| `templates/` | 7 套 HTML 模板 |
+| `templates/default/` | 公开模板集（7 套 HTML） |
 | `demo/` | 可跑通示例 |
 | `style-packs/` | 付费风格包（JSON，不进 git） |
 

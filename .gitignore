@@ -15,7 +15,7 @@ output/
 
 # ─── 临时 HTML（由脚本生成的中间文件） ───
 *.html
-!templates/*.html
+!templates/default/*.html
 
 # ─── 截图资产（demo 示范截图） ───
 # 如果想保留 demo 截图作为参考，注释下一行
@@ -28,14 +28,15 @@ demo/*.html
 .codegraph/
 
 # ─── 付费内容（不进 git） ───
+dist/
 docs/
 style-packs/*.json
 !style-packs/.gitkeep
 !style-packs/default.json
 
-# ─── 私有模板（不进 git） ───
-templates-private/
-!templates-private/.gitkeep
+# ─── 私有模板（本地 git 管理，pre-push 拦截不上 GitHub） ───
+templates/private/
+templates/premium/
 
 # ─── 系统文件 ───
 .DS_Store

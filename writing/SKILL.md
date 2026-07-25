@@ -3,7 +3,7 @@ name: snapflow-writing
 description: >
   内容生产全流程 Skill（写稿+配图）。从选题确认到写稿、审核、定稿、批量配图。
   每个节点等待用户确认后才继续。
-  配图使用 content.json + template 模式，模板在 `templates/`。
+   配图使用 content.json + template 模式，模板在 `templates/default/`。
   本 skill 需与 `screenshot` skill 配合使用。
   触发词：写内容、写稿、新一期、出内容、开始写
 compatibility: opencode
@@ -106,9 +106,8 @@ bgPrompt 由四部分拼接，写稿时自动生成：
 ```
 snapflow/                         ← 项目根目录
 ├── batch-screenshot.js            ← 截图脚本
-├── templates/                     ← 配图 HTML 模板
-├── content.json.example           ← content.json 字段定义
-├── style-packs/                   ← 风格包
+├── templates/default/             ← 公开模板（7 套 HTML）
+├── style-packs/default.json       ← 出厂默认风格包
 ├── demo/                          ← 示例
 │
 └── writing/                       ← 本 skill

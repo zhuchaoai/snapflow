@@ -18,11 +18,11 @@ snapflow/
 ├── batch-screenshot.js     # 截图脚本（核心） ← 截图引擎
 ├── generate-cover-bg.js    # ComfyUI 封面底图生成
 ├── md2content.js           # 稿件 slides → content.json
-├── templates/              # 7 套 HTML 模板
-├── style-packs/            # 风格包
-│   ├── default.json        # 出厂默认（免费，开箱即用）
-│   └── .gitkeep
-├── config.yaml             # 风格包选择器（已 gitignore）
+├── LICENSE                 # MIT 开源许可
+├── templates/              # 模板集
+│   └── default/            # 公开版（7 套 HTML，开箱即用）
+├── style-packs/            # 风格包（JSON 配置）
+│   └── default.json        # 出厂默认（免费，开箱即用）
 ├── config.yaml.example     # 配置示例
 ├── content.json.example    # 内容数据模板（带注释）
 ├── SKILL.md                # 截图 Skill 入口
@@ -35,7 +35,7 @@ snapflow/
 │       ├── 02-write-draft.md
 │       └── 03-generate-images.md
 │
-└── Images/                 # 截图输出目录（已 gitignore）
+└── package.json
 ```
 
 > **两个 Skill**：本项目包含独立的截图 skill 和写稿 skill。丢进 AI 平台 skill 目录后自动识别为两个可用 skill。截图引擎可独立运行，不依赖写稿 skill。
