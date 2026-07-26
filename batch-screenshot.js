@@ -779,16 +779,66 @@ function toFileURL(absPath) {
 }
 
 // ─── 截图：启动浏览器 → 逐张导航 → 截图 ────────────
+async function tryLaunch(channel) {
+  const opts = {
+    headless: HEADLESS,
+    args: HEADLESS ? ['--headless=new', '--disable-gpu'] : ['--disable-gpu'],
+  };
+  if (channel) opts.channel = channel;
+  return await chromium.launch(opts);
+}
+
+async function ensurePlaywrightChromium() {
+  // 检测 Chromium 是否已安装，未安装则自动下载
+  try {
+    await tryLaunch(null);
+    return true;
+  } catch (err) {
+    if (err.message && err.message.includes('Executable doesn\'t exist')) {
+      console.log('  → Playwright Chromium 未安装，自动下载中...');
+      return new Promise((resolve) => {
+        exec('npx playwright install chromium', { timeout: 300000 }, (err) => {
+          resolve(!err);
+        });
+      });
+    }
+    return false;
+  }
+}
+
+async function launchBrowser() {
+  // 优先级：--channel 指定 > 自动尝试 msedge > chrome > Playwright Chromium
+  const channels = CHANNEL ? [CHANNEL] : ['msedge', 'chrome', null];
+  const channelLabel = (ch) => ch || 'chromium';
+
+  for (const ch of channels) {
+    try {
+      const browser = await tryLaunch(ch);
+      console.log(`  ✓ 浏览器已启动: ${channelLabel(ch)}`);
+      return browser;
+    } catch (err) {
+      if (ch === null) {
+        // Playwright Chromium 失败时尝试自动安装
+        console.log(`  ⚠ Playwright Chromium 不可用，尝试自动安装...`);
+        const installed = await ensurePlaywrightChromium();
+        if (installed) {
+          const browser = await tryLaunch(null);
+          console.log(`  ✓ 浏览器已启动: chromium (自动安装)`);
+          return browser;
+        }
+        throw new Error('无可用浏览器，且自动安装失败。请手动执行: npx playwright install chromium');
+      }
+      console.log(`  ⚠ ${ch} 不可用，尝试下一个...`);
+    }
+  }
+  throw new Error('无可用浏览器');
+}
+
 async function screenshotAll(htmlDir, files) {
   let browser;
   try {
     console.log(`  启动浏览器 (${HEADLESS ? 'headless' : 'headed'})...`);
-    const launchOpts = {
-      headless: HEADLESS,
-      args: HEADLESS ? ['--headless=new', '--disable-gpu'] : ['--disable-gpu'],
-    };
-    if (CHANNEL) launchOpts.channel = CHANNEL;
-    browser = await chromium.launch(launchOpts);
+    browser = await launchBrowser();
 
     const context = await browser.newContext({
       viewport: { width: getCfgScreenshotWidth(), height: getCfgScreenshotHeight() },
@@ -850,7 +900,7 @@ async function main() {
   console.log('  批量截图脚本 batch-screenshot.js');
   console.log(`  模式: ${MODE}`);
   console.log(`  headless: ${HEADLESS}`);
-  console.log(`  channel: ${CHANNEL || 'playwright'}`);
+  console.log(`  channel: ${CHANNEL || 'auto (msedge→chrome→chromium)'}`);
   if (CFG_PATH) console.log(`  config: ${CFG_PATH}`);
   console.log('═══════════════════════════════════════\n');
 
