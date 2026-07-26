@@ -23,6 +23,7 @@ const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
+const { exec } = require('child_process');
 
 // ─── 参数解析 ────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -178,6 +179,11 @@ function getCfgMaxShowcaseItems() {
   return SP?.screenshot?.maxShowcaseItems || CFG?.screenshot?.max_showcase_items || 2;
 }
 
+// ─── ComfyUI 封面底图配置 ────────────────────────────
+function getCfgCoverBg() {
+  return SP?.coverBg || CFG?.cover_bg || null;
+}
+
 // 默认底部条渐变（按类型，无 CFG 时使用中性灰）
 const DEFAULT_BOTTOM_BARS = {
   cover:    '#3b82f6, #60a5fa, #60a5fa, #3b82f6',
@@ -292,6 +298,155 @@ function buildShowcaseItemsHTML(items) {
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
+}
+
+// ─── ComfyUI 封面底图生成 ────────────────────────────
+// 判断逻辑：
+//   bgImage 已存在 → 跳过
+//   风格包无 coverBg → 跳过（无 ComfyUI 环境）
+//   有 coverBg → 检查 ComfyUI → 未运行且配置了 startCmd 则启动 → 提交 → 轮询 → 拷贝
+
+async function ensureComfyUI(coverBg) {
+  const url = coverBg.comfyui?.url || 'http://127.0.0.1:8188';
+  try {
+    const res = await fetch(url + '/system_stats');
+    if (res.ok) { return true; }
+  } catch {}
+  if (!coverBg.startCmd) { return false; }
+  console.log('  → ComfyUI 未运行，启动中...');
+  try {
+    await new Promise((resolve) => {
+      exec(coverBg.startCmd, () => resolve());
+    });
+    await sleep(15000);
+    const res = await fetch(url + '/system_stats');
+    if (res.ok) { return true; }
+  } catch {}
+  return false;
+}
+
+async function submitCoverGeneration(coverBg, bgPrompt) {
+  const url = coverBg.comfyui?.url || 'http://127.0.0.1:8188';
+  const ckptName = coverBg.comfyui?.checkpoint || '';
+  if (!ckptName) { return null; }
+  const params = coverBg.comfyui?.params || { steps: 25, cfg: 7, sampler_name: 'euler', scheduler: 'normal' };
+  const negative = coverBg.comfyui?.negativePrompt || '';
+  const prompt = bgPrompt || 'dark background, minimalist composition';
+  const seed = Math.floor(Math.random() * 1000000000);
+
+  const payload = {
+    prompt: {
+      "3": {
+        "class_type": "KSampler",
+        "inputs": {
+          "seed": seed,
+          "steps": params.steps || 25,
+          "cfg": params.cfg || 7,
+          "sampler_name": params.sampler_name || 'euler',
+          "scheduler": params.scheduler || 'normal',
+          "denoise": 1,
+          "model": ["4", 0],
+          "positive": ["6", 0],
+          "negative": ["7", 0],
+          "latent_image": ["5", 0]
+        }
+      },
+      "4": { "class_type": "CheckpointLoaderSimple", "inputs": { "ckpt_name": ckptName } },
+      "5": { "class_type": "EmptyLatentImage", "inputs": { "width": 1242, "height": 1660, "batch_size": 1 } },
+      "6": { "class_type": "CLIPTextEncode", "inputs": { "text": prompt, "clip": ["4", 1] } },
+      "7": { "class_type": "CLIPTextEncode", "inputs": { "text": negative, "clip": ["4", 1] } },
+      "8": { "class_type": "VAEDecode", "inputs": { "samples": ["3", 0], "vae": ["4", 2] } },
+      "9": { "class_type": "SaveImage", "inputs": { "filename_prefix": "ComfyUI", "images": ["8", 0] } }
+    }
+  };
+
+  try {
+    const res = await fetch(url + '/prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.prompt_id;
+  } catch { return null; }
+}
+
+async function pollCoverGeneration(coverBg, promptId) {
+  const url = coverBg.comfyui?.url || 'http://127.0.0.1:8188';
+  const check = async () => {
+    try {
+      const res = await fetch(url + `/history/${promptId}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data[promptId] || null;
+    } catch { return null; }
+  };
+  for (const wait of [35000, 15000, 15000]) {
+    await sleep(wait);
+    const result = await check();
+    if (result?.status?.completed) return result;
+  }
+  return null;
+}
+
+function copyCoverOutput(historyResult, outDir, bgImage) {
+  if (!bgImage) return false;
+  const outputs = historyResult.outputs;
+  if (!outputs) return false;
+  for (const nodeId of Object.keys(outputs)) {
+    const node = outputs[nodeId];
+    if (node.images && node.images.length > 0) {
+      const img = node.images[0];
+      const comfyDir = getCfgCoverBg()?.outputDir || '';
+      if (!comfyDir) return false;
+      const srcPath = path.join(comfyDir, img.filename);
+      const dstPath = path.join(outDir, bgImage);
+      if (fs.existsSync(srcPath)) {
+        fs.copyFileSync(srcPath, dstPath);
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+async function generateCoverBackgrounds(config, articleDir) {
+  const coverBg = getCfgCoverBg();
+  if (!coverBg) return;
+  const outDir = path.resolve(articleDir, config.outputDir);
+  for (const img of config.images) {
+    if (img.type !== 'cover') continue;
+    if (!img.bgImage) continue;
+    const bgPath = path.join(outDir, img.bgImage);
+    if (fs.existsSync(bgPath)) {
+      console.log(`  → 底图已存在，跳过: ${img.bgImage}`);
+      continue;
+    }
+    console.log(`  → 生成封面底图: ${img.bgImage}`);
+    const ready = await ensureComfyUI(coverBg);
+    if (!ready) {
+      console.log(`  ⚠ ComfyUI 不可用，封面使用渐变背景兜底`);
+      continue;
+    }
+    const promptId = await submitCoverGeneration(coverBg, img.bgPrompt);
+    if (!promptId) {
+      console.log(`  ⚠ 底图提交失败，封面使用渐变背景兜底`);
+      continue;
+    }
+    console.log(`    已提交，prompt_id: ${promptId}`);
+    const result = await pollCoverGeneration(coverBg, promptId);
+    if (!result) {
+      console.log(`  ⚠ 底图生成超时，封面使用渐变背景兜底`);
+      continue;
+    }
+    const copied = copyCoverOutput(result, outDir, img.bgImage);
+    if (copied) {
+      console.log(`  ✓ 底图已生成: ${img.bgImage}`);
+    } else {
+      console.log(`  ⚠ 底图文件拷贝失败，封面使用渐变背景兜底`);
+    }
+  }
 }
 
 // ─── Showcase 自动拆分（单页最多 2 项，超出自动拆页） ──
@@ -725,6 +880,9 @@ async function main() {
     console.log(`图片数: ${config.images.length}\n`);
 
     htmlDir = path.resolve(articleDir, config.outputDir);
+
+    // 封面底图自动生成（ComfyUI）
+    await generateCoverBackgrounds(config, articleDir);
 
     // 前置校验
     const valid = validateConfig(config, articleDir);

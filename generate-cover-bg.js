@@ -1,20 +1,19 @@
 /**
  * generate-cover-bg.js — ComfyUI 封面底图一键生成脚本
  *
- * 功能：提交生成 → 轮询出图 → 拷贝重命名
+ * 功能：启动 ComfyUI（如未运行）→ 提交生成 → 轮询出图 → 拷贝重命名
  * 用法：node generate-cover-bg.js --config "篇目/Images/content.json" --md "篇目/Manuscript/稿件.md" [--style-pack style-pack.json]
  *
  * bgPrompt 从 --md 指定的稿件 slides 区读取，content.json 不存此字段。
- * ComfyUI URL、checkpoint、参数、输出目录从风格包 coverBg 段读取。
+ * ComfyUI URL、checkpoint、参数、输出目录、启动命令从风格包 coverBg 段读取。
  *
- * 前置条件：ComfyUI 必须已启动（由 agent 用 MCP 命令启动）
- *           6篇循环时仅需启动一次，脚本自动识别已完成状态
- *
- * 注意：本脚本只处理1张底图。6篇循环由Skill控制。
+ * 脚本自动识别 ComfyUI 状态：已运行则跳过启动，未运行则执行 startCmd 后等待就绪。
+ * 自动拷贝重命名到当期 Images/ 目录和 style pack 指定的输出目录。
  */
 
 const fs = require('fs');
 const path = require('path');
+const { exec } = require('child_process');
 
 // ─── 参数解析 ────────────────────────
 const args = process.argv.slice(2);
@@ -55,14 +54,13 @@ const comfyParams = cb.comfyui?.params || { steps: 25, cfg: 7, sampler_name: 'eu
 const negativePrompt = cb.comfyui?.negativePrompt || '';
 const ckptName = cb.comfyui?.checkpoint || process.env.COMFYUI_CHECKPOINT || '';
 const comfyOutputDir = cb.outputDir || process.env.COMFYUI_OUTPUT_DIR || '';
+const startWaitMs = 15 * 1000;
 
 if (!ckptName) {
-  console.error('✗ 未指定 checkpoint，请在风格包 coverBg.comfyui.checkpoint 或环境变量 COMFYUI_CHECKPOINT 中设置');
-  process.exit(1);
+  throw new Error('未指定 checkpoint，请在风格包 coverBg.comfyui.checkpoint 或环境变量 COMFYUI_CHECKPOINT 中设置');
 }
 if (!comfyOutputDir) {
-  console.error('✗ 未指定 ComfyUI 输出目录，请在风格包 coverBg.outputDir 或环境变量 COMFYUI_OUTPUT_DIR 中设置');
-  process.exit(1);
+  throw new Error('未指定 ComfyUI 输出目录，请在风格包 coverBg.outputDir 或环境变量 COMFYUI_OUTPUT_DIR 中设置');
 }
 
 // ─── 从稿件 slides 区读取 bgPrompt ────
@@ -85,14 +83,28 @@ const bgPrompt = parseSlidesBgPrompt(mdPath);
 // ─── 工具 ────────────────────────────
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-// ─── 步骤1：检查 ComfyUI 是否在线 ────
+// ─── 步骤1：检查 ComfyUI 是否在线，未运行则启动 ────
 async function ensureComfyUI() {
+  // 先试一次
   try {
     const res = await fetch(comfyuiUrl + '/system_stats');
-    if (res.ok) return;
+    if (res.ok) { console.log('  ✓ ComfyUI 已运行'); return; }
   } catch {}
-  console.error('✗ ComfyUI 未运行，请先用 MCP 命令启动');
-  process.exit(1);
+
+  console.log('  → ComfyUI 未运行，启动中...');
+  await new Promise((resolve) => {
+    exec('powershell.exe -Command "& { Start-Process -WindowStyle Normal -FilePath D:\\ComfyUI\\.venv\\Scripts\\python.exe -ArgumentList main.py,--port,8188,--listen -WorkingDirectory D:\\ComfyUI }"', (err) => resolve());
+  });
+
+  console.log(`    等待 ${startWaitMs / 1000} 秒...`);
+  await sleep(startWaitMs);
+
+  // 重试一次
+  try {
+    const res = await fetch(comfyuiUrl + '/system_stats');
+    if (res.ok) { console.log('  ✓ ComfyUI 已就绪'); return; }
+  } catch {}
+  throw new Error('ComfyUI 启动后仍不可达，请检查');
 }
 
 // ─── 步骤2：提交生成 ────────────────
@@ -151,8 +163,7 @@ async function submitGeneration() {
   });
 
   if (!res.ok) {
-    console.error('✗ 提交失败:', res.statusText);
-    process.exit(1);
+    throw new Error('提交失败: ' + res.statusText);
   }
 
   const data = await res.json();
@@ -191,17 +202,13 @@ async function pollGeneration(promptId) {
   result = await check();
   if (result?.status?.completed) return result;
 
-  console.error('✗ 出图超时，可能卡住了');
-  process.exit(1);
+  throw new Error('出图超时，可能卡住了');
 }
 
 // ─── 步骤4：拷贝文件 ────────────────
 function copyOutput(historyResult) {
   const outputs = historyResult.outputs;
-  if (!outputs) {
-    console.error('✗ 未找到输出文件');
-    process.exit(1);
-  }
+  if (!outputs) throw new Error('未找到输出文件');
 
   for (const nodeId of Object.keys(outputs)) {
     const node = outputs[nodeId];
@@ -219,22 +226,24 @@ function copyOutput(historyResult) {
     }
   }
 
-  console.error('✗ 找不到输出文件');
-  process.exit(1);
+  throw new Error('找不到输出文件');
 }
 
 // ─── 主流程 ──────────────────────────
 async function main() {
   console.log('── 封面底图生成 ──────────────');
-  await ensureComfyUI();
-  const promptId = await submitGeneration();
-  const history = await pollGeneration(promptId);
-
-  copyOutput(history);
-  console.log('──────────────────────────────');
+  try {
+    await ensureComfyUI();
+    const promptId = await submitGeneration();
+    const history = await pollGeneration(promptId);
+    copyOutput(history);
+  } catch (err) {
+    console.error('\n✗', err.message);
+    process.exitCode = 1;
+  } finally {
+    console.log('  ※ ComfyUI 保持运行，请手动关闭');
+    console.log('──────────────────────────────');
+  }
 }
 
-main().catch(err => {
-  console.error('\n✗ 脚本运行失败:', err.message);
-  process.exit(1);
-});
+main();

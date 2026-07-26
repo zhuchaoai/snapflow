@@ -12,7 +12,9 @@
 
 ## Step 3 — 写初稿（结构化输出）
 
-遵循 `config.yaml` 中的内容预设（字数、emoji 限制、语气）。输出完整文稿。
+严格遵循已加载的风格包 `writing` 段中的全部约束（标题字数、格式、语气、emoji 限制、anti-AI slop 规则、hashtags 等）。
+如有 `writing.writingRules` 外部规则文件路径，一并读取执行。
+输出完整文稿。
 
 ### 输出格式
 

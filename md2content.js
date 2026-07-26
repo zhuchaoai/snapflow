@@ -191,6 +191,7 @@ function buildJson(items, meta, mdPath, stylePack) {
           img.tagline = item.tagline || '';
           img.badges = item.badges || [];
           img.bgImage = bgName;
+          img.bgPrompt = item.bgPrompt || '';
           break;
         case 'content':
           Object.assign(img, { pageNum: item.pageNum, sectionTitle: item.sectionTitle, footerText: item.footerText || '', cards: item.cards || [] });

@@ -38,6 +38,9 @@ style-packs/*.json
 templates/private/
 templates/premium/
 
+# ─── 私有脚本（WSL 专属 ComfyUI 启动逻辑） ───
+generate-cover-bg.js
+
 # ─── 系统文件 ───
 .DS_Store
 Thumbs.db

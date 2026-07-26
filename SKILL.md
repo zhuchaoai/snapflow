@@ -234,94 +234,23 @@ node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/x
 
 ## 封面底图生成（ComfyUI）
 
-> 本流程有条件依赖：需要本地运行 ComfyUI + SDXL 模型。
-> **无 ComfyUI 环境时，直接跳过此节。封面使用纯色/渐变背景（已在模板兜底），不阻塞后续截图流程。**
+`batch-screenshot.js` **已内置 ComfyUI 支持**，风格包里配了 `coverBg` 段就会自动执行。
 
-### ComfyUI 启动协议（MUST-FOLLOW）
-
-本协议必须严格按顺序逐条执行。**禁止跳过步骤、合并分支、自行优化等待时间。**
-
+流程全自动：
 ```
-STEP 1 — 检查 ComfyUI 状态
-  执行 MCP 工具 comfyui_health_check
-  ├─ IF 返回 "running" → 协议完成，跳至 执行底图生成脚本
-  └─ IF 返回 "not running" → 执行 STEP 2
-
-STEP 2 — 启动 ComfyUI
-  执行 MCP 工具 comfyui_start_comfyui
-  ⚠️ 启动后立即执行 sleep(15000)
-  ⚠️ 禁止在 sleep 完成前调用任何 health_check
-
-STEP 3 — 首次复检
-  sleep(15000) 完成后，执行 comfyui_health_check
-  ├─ IF "running" → 协议完成，跳至 执行底图生成脚本
-  └─ IF "not running" → 执行 STEP 4
-
-STEP 4 — 二次复检
-  sleep(15000) → 执行 comfyui_health_check
-  ├─ IF "running" → 协议完成，跳至 执行底图生成脚本
-  └─ IF "not running" → 停止。问用户："ComfyUI 启动不了，检查一下？"
-
-  （用户回复前不得重试、不得跳过、不得继续后续流程）
-
-=== 禁止事项（违反即任务失败） ===
-  ❌ 禁止连续两次 health_check 之间不加 sleep(15000)
-  ❌ 禁止 sleep 期间提前中断或缩短等待
-  ❌ 禁止跳过 STEP 1 直接启动
-  ❌ 禁止在自己不确定时自行猜测流程、自行编造 MCP 命令、自行决定等待时间
+截图脚本开始
+  → 检查封面底图是否已存在（已有则跳过）
+  → 检查风格包是否有 coverBg 配置（无则跳过，封面用渐变兜底）
+  → 检查 ComfyUI 是否运行（未运行且有 startCmd 则自动启动）
+  → 从 content.json 的 bgPrompt 读取描述 → 提交生成
+  → 轮询出图（35s→15s→15s）→ 拷贝到 Images/ 目录
+  → 失败则自动用渐变兜底，不阻塞截图
 ```
 
-### 执行底图生成脚本
+AI 执行 `batch-screenshot.js` 即可，无需单独跑任何底图脚本。
 
-直接用 `generate-cover-bg.js` 脚本完成：提交 → 轮询 → 拷贝重命名一步到位。
-
-#### 脚本化操作（推荐）
-
-```bash
-# 单篇封面底图生成
-node generate-cover-bg.js --config "篇目/Images/content.json" --md "篇目/Manuscript/稿件.md" [--style-pack style-packs/xxx.json]
-```
-
-脚本自动执行：
-1. 检查 ComfyUI 在线 → 2. 从稿件 slides 读取 bgPrompt → 3. 提交生成 → 4. 轮询出图（35s→15s→15s）→ 5. 拷贝重命名到 Images/ 目录
-
-ComfyUI 配置（URL、模型、参数、输出目录）从风格包 `coverBg` 段读取，无风格包时通过环境变量 `COMFYUI_URL`、`COMFYUI_CHECKPOINT`、`COMFYUI_OUTPUT_DIR` 配置。
-
-#### 手动操作（仅当脚本不可用时）
-
-**① 提交生成**
-- 用 `comfyui_generate_image` 提交，记录返回的 prompt_id
-
-**② 轮询出图（时间间隔是硬性规定）**
-
-```
-sleep(35000) → get_job_status(prompt_id)
-├─ IF completed → 跳至 ③ 获取文件
-└─ IF not completed → sleep(15000) → get_job_status(prompt_id)
-   ├─ IF completed → 跳至 ③
-   └─ IF not completed → sleep(15000) → get_job_status(prompt_id)
-      ├─ IF completed → 跳至 ③
-      └─ IF not completed → 问用户"ComfyUI 可能卡住了，检查一下？"
-```
-
-⚠️ 首次 35 秒、后续 15 秒不可缩短。提前查询结果一定是"未完成"，且浪费 token。
-
-**③ 获取输出文件**
-- `get_history(prompt_id)` 获取输出文件名
-- 从 ComfyUI 输出目录拷贝到当期 `Images/` 目录，按 `cover.bgImage` 命名
-
-### 多篇循环流程
-
-多篇封底需逐篇生成，**ComfyUI 仅需启动一次**：
-
-```
-01. 执行 ComfyUI 启动协议（仅第1篇前执行）
-02. FOR 篇1 TO 篇N:
-03.   执行 generate-cover-bg.js --config "篇N/Images/content.json" --md "篇N/Manuscript/稿件.md"
-04.   → 脚本：检查在线 → 提交 → 轮询(35s→15s→15s) → 拷贝重命名
-05.   → 完成进入下一篇
-06.   → 失败则停下来问用户
-```
+> 无 ComfyUI 环境时，风格包不配 `coverBg` 即可，脚本自动跳过。
+> 手动操作备选等已移除，因为脚本已覆盖所有场景。
 
 ---
 
