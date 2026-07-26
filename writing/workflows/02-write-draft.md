@@ -48,27 +48,22 @@
 
 ### slides 数据区格式
 
-````
-```slides
-# 封面
-- type: cover
-  filename: {篇序号}-{关键词}-01-cover
-  title: "..."
-  subtitle: "..."
-  tagline: "..."
-  badges: ["A", "B"]
-  bgPrompt: "底图生成 prompt"
+稿件中必须包含 slides 数据区（写在正文下方）。完整模板见 `writing/manuscript-template.md`，此处只列速查。
 
-# 内容页
-- type: content | data | compare | flow | text
-  filename: {篇序号}-{关键词}-02-xxx
-  pageNum: "01"
-  sectionTitle: "..."
-  # 按各 type 的具体字段填写
-```
-````
+常用类型：
 
-> 具体字段结构见 `screenshot` skill 的 `content.json.example`。
+| 类型 | 用途 | 关键字段 |
+|:----|:-----|:---------|
+| `cover` | 封面 | `title`, `subtitle`, `tagline`, `badges`(带emoji), `bgPrompt` |
+| `content` | 卡片 | `pageNum`, `sectionTitle`, `cards[{icon,title,desc}]` |
+| `data` | 数据 | `pageNum`, `sectionTitle`, `stats[{value,label,highlight}]` |
+| `text` | 文字 | `pageNum`, `sectionTitle`, `lines[{text,highlight}]` |
+| `compare` | 对比 | `pageNum`, `sectionTitle`, `leftItems/rightItems`, `summaryText` |
+| `flow` | 流程 | `pageNum`, `sectionTitle`, `steps[{num,title,desc}]` |
+| `showcase` | 截图展示 | `pageNum`, `sectionTitle`, `items[{image,title,desc}]` |
+
+> 每种 type 的完整字段结构 → 打开 `writing/manuscript-template.md` 直接复制使用。
+> content.json 字段定义 → 查看 `content.json.example`。
 
 ### bgPrompt 编写规则
 

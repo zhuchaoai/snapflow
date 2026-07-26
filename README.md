@@ -30,6 +30,7 @@ snapflow/
 │
 ├── writing/                # ← 写稿引擎
 │   ├── SKILL.md            # 写稿 Skill 入口
+│   ├── manuscript-template.md  # 稿子格式模板（含 Slides 数据区完整写法）
 │   ├── config.yaml.example
 │   └── workflows/
 │       ├── 02-write-draft.md

@@ -3,7 +3,7 @@ name: snapflow-writing
 description: >
   内容生产全流程 Skill（写稿+配图）。从选题确认到写稿、审核、定稿、批量配图。
   每个节点等待用户确认后才继续。
-   配图使用 content.json + template 模式，模板在 `templates/default/`。
+   配图使用 content.json + template 模式，模板目录由风格包 `paths.templateDir` 指定，默认 `templates/default/`。
   本 skill 需与 `screenshot` skill 配合使用。
   触发词：写内容、写稿、新一期、出内容、开始写
 compatibility: opencode
@@ -17,8 +17,9 @@ compatibility: opencode
 
 1. `config.yaml` — 路径、模型、预设等配置
 2. 从 `config.yaml` 的 `style_pack` 字段加载风格包 JSON，提取 **`writing` 段**作为写稿约束（标题规则、字数、emoji、语气、anti-AI slop 等）；如风格包有 `writing.writingRules` 路径，一并读取该规则文件
-3. `workflows/02-write-draft.md` — 写稿流程详情
-4. `workflows/03-generate-images.md` — 配图流程详情
+3. `manuscript-template.md` — 完整稿子格式模板（含 YAML 头部、正文规范、Slides 数据区每种 type 的写法）
+4. `workflows/02-write-draft.md` — 写稿流程详情
+5. `workflows/03-generate-images.md` — 配图流程详情
 
 ---
 
@@ -64,28 +65,20 @@ Phase 2: 批量配图（调用 screenshot skill）
 
 ## slides 数据区格式速查
 
-稿件中必须包含以下 slides 区块（写在正文下方）：
+稿件中必须包含 slides 数据区（写在正文下方）。完整模板见 `manuscript-template.md`，这里只列字段速查：
 
-````
-```slides
-# 封面
-- type: cover
-  filename: {篇序号}-{关键词}-01-cover
-  title: "..."
-  subtitle: "..."
-  tagline: "..."
-  badges: ["🏷️ 标签1", "🏷️ 标签2"]
-  bgPrompt: "底图生成 prompt"
+| 类型 | 必填 | 关键字段 |
+|:----|:-----|:---------|
+| `cover` | ✅ | `title`, `subtitle`, `tagline`, `badges`(带emoji), `bgPrompt` |
+| `content` | ✅ | `pageNum`, `sectionTitle`, `cards[{icon,title,desc}]` |
+| `data` | ✅ | `pageNum`, `sectionTitle`, `stats[{value,label,highlight}]` |
+| `text` | ✅ | `pageNum`, `sectionTitle`, `lines[{text,highlight}]` |
+| `compare` | ✅ | `pageNum`, `sectionTitle`, `leftItems/rightItems`, `summaryText` |
+| `flow` | ✅ | `pageNum`, `sectionTitle`, `steps[{num,title,desc}]` |
+| `showcase` | ✅ | `pageNum`, `sectionTitle`, `items[{image,title,desc}]` |
 
-# 内容页
-- type: content | data | compare | flow | text
-  filename: {篇序号}-{关键词}-02-xxx
-  pageNum: "01"
-  sectionTitle: "..."
-```
-````
-
-> 完整字段定义 → 查看 `screenshot` skill 的 `content.json.example`。
+> 每种 type 的详细字段 → 参照 `manuscript-template.md` 中的 Slides 数据区示例。
+> content.json 字段定义 → 查看 `screenshot` skill 的 `content.json.example`。
 
 ### bgPrompt 编写规则
 
@@ -113,6 +106,7 @@ snapflow/                         ← 项目根目录
 │
 └── writing/                       ← 本 skill
     ├── SKILL.md                    ← 本文件
+    ├── manuscript-template.md      ← 稿子格式模板
     ├── config.yaml.example
     └── workflows/
         ├── 02-write-draft.md      ← 写稿流程
@@ -122,6 +116,7 @@ snapflow/                         ← 项目根目录
 ## 关联
 
 - [[screenshot]] — 配图截图工具（content.json 字段定义、截图脚本用法）
+- `manuscript-template.md` — 完整稿子格式模板（写稿时直接复制使用）
 - `workflows/02-write-draft` — 写稿流程详情
 - `workflows/03-generate-images` — 配图流程详情
 - `config.yaml.example` — 配置模板

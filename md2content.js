@@ -201,8 +201,14 @@ function buildJson(items, meta, mdPath, stylePack) {
           break;
         case 'compare':
           Object.assign(img, { comparePageNum: item.pageNum || item.comparePageNum || '01', sectionTitle: item.sectionTitle });
-          ['leftHeader','leftSub','leftItems','vsText','rightHeader','rightSub','rightItems','summaryText'].forEach(k => {
+          ['leftHeader','leftSub','vsText','rightHeader','rightSub','summaryText'].forEach(k => {
             if (item[k] !== undefined) img[k] = item[k];
+          });
+          // leftItems/rightItems: 纯字符串自动转 {label, value}
+          ['leftItems','rightItems'].forEach(k => {
+            if (item[k] !== undefined) {
+              img[k] = item[k].map(v => typeof v === 'string' ? { label: '', value: v } : v);
+            }
           });
           if (img.leftHeader === undefined && item.leftTitle !== undefined) img.leftHeader = item.leftTitle;
           if (img.rightHeader === undefined && item.rightTitle !== undefined) img.rightHeader = item.rightTitle;

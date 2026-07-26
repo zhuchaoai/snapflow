@@ -11,6 +11,7 @@ Images/*.png
 Images/*.jpg
 Images/*.jpeg
 Images/*.webp
+Images/*/
 output/
 
 # ─── 临时 HTML（由脚本生成的中间文件） ───

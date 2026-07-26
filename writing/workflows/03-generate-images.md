@@ -19,21 +19,31 @@ Phase 1 写稿完成后，所有稿件已定稿。按以下步骤执行。
 解析各篇稿件的 slides 数据区，生成 content.json：
 
 ```bash
-node batch-screenshot.js --mode template --config "篇目/Images/content.json"
+node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/xxx.json
 ```
 
-### 3️⃣ 封面底图生成（如需）
+### 3️⃣ 封面底图生成（按需）
 
-如需 AI 生成封面底图，按以下步骤：
+有两种方式，取决于你的环境：
 
-- 从稿件 slides 数据区读取 cover.bgPrompt 字段
-- 使用你习惯的 AI 绘图工具生成底图
-- 输出到 `{篇目}/Images/{篇序号}-cover-bg.png`
+**方式 A：ComfyUI + generate-cover-bg.js（WSL + Windows 混合环境）**
+适用场景：WSL 跑脚本、Windows 跑 ComfyUI。
+
+```bash
+node generate-cover-bg.js --config "篇目/Images/content.json" --md "篇目/Manuscript/稿件.md" [--style-pack style-packs/xxx.json]
+```
+
+脚本自动：检查 ComfyUI 在线 → 从 slides bgPrompt 提交生成 → 轮询出图 → 拷贝到 Images/。
+
+**方式 B：batch-screenshot.js 内置集成（纯 Windows 环境）**
+`batch-screenshot.js` 已内置 ComfyUI 支持。风格包里配了 `coverBg` 段就会自动检测并调用。
+
+**无底图时**：两种方式都会跳过，封面使用渐变背景兜底。
 
 ### 4️⃣ 批量截图
 
 ```bash
-node batch-screenshot.js --mode template --config "篇目/Images/content.json"
+node batch-screenshot.js --style-pack style-packs/xxx.json --config "篇目/Images/content.json"
 ```
 
 筛选模式（只改几张图时）加 `--files "篇名-02,篇名-04"`。

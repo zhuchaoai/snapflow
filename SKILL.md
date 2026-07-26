@@ -27,10 +27,11 @@ compatibility: opencode
 ## 前置依赖
 
 - Node.js 18+
-- 浏览器（二选一）：
+- 浏览器（三选一）：
   - Playwright Chromium（`npx playwright install chromium`）— 推荐，自动下载
   - 系统已安装的 Chrome 或 Edge — 国内网络免下载，截图脚本加 `--channel msedge` 或 `--channel chrome`
-- 本目录下的 `templates/default/`（默认模板集）和 `config.yaml`（可选，用于注入品牌/配色）
+- 模板目录由风格包 `paths.templateDir` 指定（默认 `templates/default/`）
+- `config.yaml`（可选，用于注入品牌/配色，通过 `--cfg` 加载）
 
 ---
 
@@ -143,7 +144,7 @@ compatibility: opencode
   "leftHeader": "改造前",
   "leftSub": "方案A",
   "leftItems": [{"label": "耗时", "value": "5分钟/次"}],
-  "vsText": "VS",
+  "vsText": "VS",           // 可选，默认 "VS"
   "rightHeader": "改造后",
   "rightSub": "方案B",
   "rightItems": [{"label": "耗时", "value": "10秒/次"}],
@@ -205,7 +206,7 @@ compatibility: opencode
 | `bgImage` | cover | 封面底图文件名，放在 Images/ 目录 |
 | `cards` | content | 卡片数组，每项含 icon/title/desc |
 | `leftItems` / `rightItems` | compare | 对比列项目数组，每项含 label/value |
-| `vsText` | compare | 中间 VS 标签文字 |
+| `vsText` | compare | 中间 VS 标签文字（可选，不填默认 "VS"） |
 | `summaryText` | compare | 底部总结文字 |
 | `stats` | data | 统计项数组，每项含 value/label/highlight |
 | `steps` | flow | 步骤数组，每项含 num/title/desc |
