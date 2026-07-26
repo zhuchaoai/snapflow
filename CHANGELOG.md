@@ -1,5 +1,29 @@
 # Changelog
 
+## v1.2.0 (2026-07-26)
+
+### Added
+- 路径解析增加 `fs.realpathSync` 降级支持，修复 Windows 环境 symlink 路径解析失败
+- `md2content.js`：compare 的 `leftItems`/`rightItems` 自动兼容纯字符串格式（简写无需 `{label, value}`）
+- `md2content.js`：重复运行时保留已有底图文件名，不覆盖用户放置的底图
+- 新增 `writing/manuscript-template.md` 完整稿子格式模板（含 Slides 数据区全类型示例）
+
+### Fixed
+- 修复 `batch-screenshot.js`：`BADGE_TEXT_COLOR` 被 `BADGE_NAME_COLOR` 意外覆盖的 bug
+- 修复 `templates/default/` 中 6 个模板 `background: {{GRID_OVERLAY}}` 缺少分号的 CSS 错误
+
+### Changed
+- `batch-screenshot.js`：网格覆盖层支持按类型覆写（`text`/`data` 类型用亮网格）
+- `batch-screenshot.js`：`FOOTER_COLOR` 支持按类型覆写（`type.footerText` > 全局 `textMuted`）
+
+### Docs
+- 根目录新增 `AGENTS.md` 项目知识库（OpenCode 自动加载）
+- screenshot SKILL：前置依赖、模板目录、`vsText` 字段说明更新
+- 配图流程命令补全 `--style-pack` 参数
+- README 目录结构更新
+
+---
+
 ## v1.1.0 (2026-07-26)
 
 ### Added
