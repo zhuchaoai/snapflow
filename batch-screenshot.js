@@ -44,18 +44,40 @@ const ONLY_FILES = hasFlag('--files')
     })()
   : null;
 
-// ─── 模板目录（相对工作目录，优先使用 CLI 参数，其次 CFG） ───
+// ─── 路径解析 ──────────────────────────────────────────
+let SP_PROJECT_ROOT = null;
+function resolveRelPath(relPath) {
+  const bases = [__dirname, process.cwd()];
+  if (SP_PROJECT_ROOT) bases.push(SP_PROJECT_ROOT);
+  // Windows symlink → WSL 场景：对每个 base 也试 realpath
+  for (const base of [...bases]) {
+    try {
+      const real = fs.realpathSync(base);
+      if (real !== base) bases.push(real);
+    } catch (_) {}
+  }
+  for (const base of bases) {
+    const p = path.resolve(base, relPath);
+    if (fs.existsSync(p)) return p;
+  }
+  return path.resolve(__dirname, relPath);
+}
+
+// ─── 模板目录 ──────────────────────────────────────────
 const CLI_TEMPLATE_DIR = getArg('--template-dir', null);
-const DEFAULT_TEMPLATE_DIR = path.resolve(process.cwd(), 'templates', 'default');
+const DEFAULT_TEMPLATE_DIR = resolveRelPath('templates/default');
 function resolveTemplateDir() {
   let dir = null;
-  if (CLI_TEMPLATE_DIR) dir = path.resolve(process.cwd(), CLI_TEMPLATE_DIR);
+  if (CLI_TEMPLATE_DIR) dir = resolveRelPath(CLI_TEMPLATE_DIR);
   else {
     const cfgDir = getCfgTemplateDir();
-    if (cfgDir) dir = path.resolve(process.cwd(), cfgDir);
+    if (cfgDir) dir = resolveRelPath(cfgDir);
   }
   if (dir && fs.existsSync(dir)) return dir;
   if (dir) console.warn(`  ⚠ 模板目录不存在: ${dir}，使用默认模板`);
+  if (dir && dir !== DEFAULT_TEMPLATE_DIR) {
+    console.warn(`    → 已回退到默认模板: ${DEFAULT_TEMPLATE_DIR}`);
+  }
   return DEFAULT_TEMPLATE_DIR;
 }
 
@@ -117,13 +139,14 @@ let SP = null; // 全局风格包对象
 
 function loadStylePack(spPath) {
   if (!spPath) return;
-  const absPath = path.resolve(process.cwd(), spPath);
+  const absPath = resolveRelPath(spPath);
   if (!fs.existsSync(absPath)) {
     console.warn(`  ⚠ 风格包不存在: ${absPath}，使用默认配置`);
     return;
   }
   try {
     SP = JSON.parse(fs.readFileSync(absPath, 'utf-8'));
+    SP_PROJECT_ROOT = path.resolve(path.dirname(absPath), '..');
     console.log(`  ✓ 已加载风格包: ${path.basename(spPath)}`);
   } catch (err) {
     console.warn(`  ⚠ 风格包解析失败: ${err.message}，使用默认配置`);
@@ -135,7 +158,7 @@ let CFG = null; // 全局配置对象，由 --cfg 加载
 
 function loadConfig(cfgPath) {
   if (!cfgPath) return;
-  const absPath = path.resolve(process.cwd(), cfgPath);
+  const absPath = resolveRelPath(cfgPath);
   if (!fs.existsSync(absPath)) {
     console.warn(`  ⚠ config.yaml 不存在: ${absPath}，使用默认值`);
     return;
@@ -501,7 +524,7 @@ function validateConfig(config, articleDir) {
       if (img.bgImage) {
         const bgPath = path.join(outDir, img.bgImage);
         if (!fs.existsSync(bgPath)) {
-          const defaultBg = path.resolve(process.cwd(), 'demo/cover-bg-default.png');
+          const defaultBg = resolveRelPath('demo/cover-bg-default.png');
           if (fs.existsSync(defaultBg)) {
             fs.copyFileSync(defaultBg, bgPath);
             console.log(`  → 已复制默认底图 -> ${img.bgImage}`);
@@ -555,7 +578,7 @@ function fillCoverVars(img, type, vars) {
   vars.ASSET_TYPE_COLOR = tc.assetType || '#94a3b8';
   vars.BRAND_BADGE_BG = tc.badgeBg || 'rgba(255,255,255,0.7)';
   vars.BRAND_BADGE_BORDER = tc.badgeBorder || 'rgba(0,0,0,0.08)';
-  vars.BADGE_TEXT_COLOR = tc.badgeNameColor || '#334155';
+  vars.BADGE_NAME_COLOR = tc.badgeNameColor || '#334155';
   vars.DIVIDER_GRADIENT = tc.dividerGradient || 'linear-gradient(90deg, #2563eb, rgba(37,99,235,0.2))';
   vars.ACCENT_GRADIENT = tc.titleHl || 'linear-gradient(135deg, #2563eb, #60a5fa)';
   vars.COVER_ACCENT_COLOR = tc.accent || '#f5a623';
@@ -744,8 +767,10 @@ function generateHTML(config, articleDir, onlyFiles) {
     vars.BOTTOM_BAR_GRADIENT = bottomBarGradient
       ? `linear-gradient(90deg, ${bottomBarGradient})`
       : `linear-gradient(90deg, ${DEFAULT_BOTTOM_BARS[type] || DEFAULT_BOTTOM_BARS.cover})`;
-    vars.GRID_OVERLAY = SP?.colors?.gridOverlay
-      ? `repeating-linear-gradient(0deg, transparent, transparent ${SP.colors.gridOverlay.size}, ${SP.colors.gridOverlay.color} ${SP.colors.gridOverlay.size}, ${SP.colors.gridOverlay.color} calc(${SP.colors.gridOverlay.size} + 1px)), repeating-linear-gradient(90deg, transparent, transparent ${SP.colors.gridOverlay.size}, ${SP.colors.gridOverlay.color} ${SP.colors.gridOverlay.size}, ${SP.colors.gridOverlay.color} calc(${SP.colors.gridOverlay.size} + 1px))`
+    // 网格覆盖层：优先按类型覆写（如 text/data 需更亮网格）
+    const go = SP?.colors?.types?.[type]?.gridOverlay || SP?.colors?.gridOverlay;
+    vars.GRID_OVERLAY = go
+      ? `repeating-linear-gradient(0deg, transparent, transparent ${go.size}, ${go.color} ${go.size}, ${go.color} calc(${go.size} + 1px)), repeating-linear-gradient(90deg, transparent, transparent ${go.size}, ${go.color} ${go.size}, ${go.color} calc(${go.size} + 1px))`
       : 'none';
 
     // 非封面公共变量
@@ -762,6 +787,18 @@ function generateHTML(config, articleDir, onlyFiles) {
     // 类型专用变量
     const fillFn = FILL_BY_TYPE[type] || fillContentVars;
     fillFn(img, type, vars);
+
+    // 按类型覆写 footer 颜色（风格包 type.footerText > 全局 textMuted）
+    if (type !== 'cover') {
+      const ft = img.colors?.footerText || getTypeColor(type, 'footerText');
+      if (ft) vars.FOOTER_COLOR = ft;
+    }
+
+    // 按类型覆写 brand 颜色（风格包 type.brandColor > 全局 tokens.brandColor）
+    if (type !== 'cover') {
+      const bc = img.colors?.brandColor || getTypeColor(type, 'brandColor');
+      if (bc) vars.BRAND_COLOR = bc;
+    }
 
     const html = replaceVars(template, vars);
     const outPath = path.join(outDir, `${img.filename}.html`);
@@ -907,14 +944,14 @@ async function main() {
   // 加载配置：优先 --style-pack，其次 cfg 中的 style_pack 字段，最后 cfg 内联字段
   loadConfig(CFG_PATH);
   if (!SP_PATH && CFG?.style_pack) {
-    loadStylePack(path.resolve(process.cwd(), CFG.style_pack));
+    loadStylePack(CFG.style_pack);
   }
   loadStylePack(SP_PATH);
 
   let htmlDir;
 
   if (MODE === 'template') {
-    const configPath = path.resolve(getArg('--config', 'content.json'));
+    const configPath = resolveRelPath(getArg('--config', 'content.json'));
     if (!fs.existsSync(configPath)) {
       console.error(`✗ 找不到 content.json: ${configPath}`);
       console.log('\n用法: node batch-screenshot.js --config path/to/content.json');
