@@ -36,8 +36,8 @@ assetType: tool        # tool(技能资产) / identity(人设资产) / life(生�
 # ── 封面 ──
 - type: cover
   filename: 001-abbr-01-cover
-  title: 主标题<em>高亮词</em>     # <em>内的文字自动金色渐变高亮
-  subtitle: 副标题
+  title: 主标题<em>高亮词</em>     # 选1-2个核心词用<em>包起来，自动金色渐变
+  subtitle: <em>副标题</em>高亮词  # 同样支持<em>高亮，位置不固定</em>
   tagline: 标签行
   badges: ["🔥标签1", "📌标签2", "⭐标签3"]   # emoji 自己写，模板不加
   bgPrompt: "描述画面的英文提示词，传给 ComfyUI 生成底图"
@@ -130,7 +130,7 @@ assetType: tool        # tool(技能资产) / identity(人设资产) / life(生�
 
 ## 写稿规范
 
-- 标题 20字以内，不使用 emoji
+- 标题 20字以内，不使用 emoji；title 和 subtitle 各选 1-2 个核心词用 `<em>核心词</em>` 包起来，位置不固定，自动金色渐变
 - 正文短句堆叠，每句 4-15 字，一句一行
 - emoji 全文不超过 3 个，放在段落转折处或结论前
 - 每篇 1 个主题，不塞多个方向

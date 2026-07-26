@@ -27,6 +27,7 @@ demo/*.html
 # ─── OpenCode 工作目录 ───
 .omo/
 .codegraph/
+AGENTS.md
 
 # ─── 付费内容（不进 git） ───
 dist/
