@@ -190,7 +190,7 @@ function buildJson(items, meta, mdPath, stylePack) {
           img.subtitle = item.subtitle || '';
           img.tagline = item.tagline || '';
           img.badges = item.badges || [];
-          img.bgImage = bgName;
+          img.bgImage = item.bgImage || bgName;
           img.bgPrompt = item.bgPrompt || '';
           break;
         case 'content':
@@ -254,6 +254,23 @@ function main() {
   if (!fs.existsSync(imgDir)) fs.mkdirSync(imgDir, { recursive: true });
 
   const result = buildJson(items, meta, mdPath, stylePack);
+
+  // 保留已有的底图文件：如果旧 content.json 里有 bgImage 且图片文件存在，不覆盖
+  const out = outputPath || path.join(imgDir, 'content.json');
+  if (fs.existsSync(out)) {
+    try {
+      const old = JSON.parse(fs.readFileSync(out, 'utf-8'));
+      for (const oldImg of old.images || []) {
+        const newImg = result.images.find(i => i.filename === oldImg.filename);
+        if (newImg && newImg.type === 'cover' && oldImg.bgImage && oldImg.bgImage !== newImg.bgImage) {
+          const bgPath = path.join(imgDir, oldImg.bgImage);
+          if (fs.existsSync(bgPath)) {
+            newImg.bgImage = oldImg.bgImage;
+          }
+        }
+      }
+    } catch (_) {}
+  }
 
   // outputDir 存相对路径，不覆盖 buildJson 中设置的 ./Images
   // 下游脚本自行 path.resolve(articleDir, outputDir) 得到正确绝对路径
