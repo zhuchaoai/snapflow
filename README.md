@@ -217,7 +217,7 @@ agent 加载风格包后直接工作，无需额外配置。
 
 - 标价 **¥49.9**，上新优惠 **¥29.9**
 - 一次购买，持续更新
-- 购买入口：[面包多 · Snapflow 风格包](https://mbd.pub/)（审核中，通过后上架）
+- 购买入口：[面包多 · Snapflow 炭火风格包](https://mbd.pub/o/bread/YZaUlp5tZA==)
 
 ## License
 
