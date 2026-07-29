@@ -356,9 +356,10 @@ async function ensureComfyUI(coverBg) {
   if (!coverBg.startCmd) { return false; }
   console.log('  → ComfyUI 未运行，启动中...');
   try {
-    await new Promise((resolve) => {
-      exec(coverBg.startCmd, () => resolve());
-    });
+    // 用 spawn 启动持久进程，不等待退出（ComfyUI 不会自己退出）
+    const proc = exec(coverBg.startCmd, { windowsHide: true });
+    proc.unref(); // 不阻塞主进程退出
+    // 立即 resolve，不等进程结束
     await sleep(15000);
     const res = await fetch(url + '/system_stats');
     if (res.ok) { return true; }
