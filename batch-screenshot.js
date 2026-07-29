@@ -424,13 +424,13 @@ async function pollCoverGeneration(coverBg, promptId) {
       return data[promptId] || null;
     } catch { return null; }
   };
-  let totalWait = 0;
-  for (const wait of [35000, 15000, 15000]) {
-    totalWait += wait;
-    console.log(`  ⏳ 底图生成中（${Math.round(totalWait / 1000)}秒）...`);
-    await sleep(wait);
+  const waits = [35000, 15000, 15000];
+  for (let i = 0; i < waits.length; i++) {
+    console.log(`    等${waits[i] / 1000}秒...`);
+    await sleep(waits[i]);
     const result = await check();
     if (result?.status?.completed) return result;
+    if (i < waits.length - 1) console.log('    未完成');
   }
   return null;
 }
