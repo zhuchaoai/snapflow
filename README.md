@@ -160,6 +160,45 @@ node batch-screenshot.js --style-pack style-packs/default.json --config demo/con
 node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --channel chrome
 ```
 
+## 安装（给 AI agent 使用）
+
+Snapflow 包含两个独立 Skill，安装后 AI agent（如 OpenCode）可自动调用。
+
+### 方式一：安装到 OpenCode 全局 skill 目录（推荐）
+
+```bash
+# 终端（cmd/PowerShell）执行，所有项目可用
+git clone https://github.com/zhuchaoai/snapflow.git %USERPROFILE%\.config\opencode\skills\snapflow
+```
+
+AI agent 重启后自动识别 `snapflow-screenshot`（配图）和 `snapflow-writing`（写稿）两个 Skill。
+
+### 方式二：安装到特定项目下（仅当前项目可用）
+
+```bash
+# 先进入你的项目根目录
+cd D:\你的项目目录
+git clone https://github.com/zhuchaoai/snapflow.git .opencode\skills\snapflow
+```
+
+### 更新
+
+```bash
+cd %USERPROFILE%\.config\opencode\skills\snapflow
+git pull
+```
+
+更新后重启 AI agent 即可生效。
+
+### 验证安装
+
+AI agent 加载后，说"配图"或"写稿"，如果能正常响应流程即安装成功。或者终端执行：
+
+```bash
+# 查看 skill 目录下是否有 snapflow
+dir %USERPROFILE%\.config\opencode\skills\snapflow
+```
+
 ## 写稿引擎
 
 需配合 AI agent（如 OpenCode）使用。agent 读取 `writing/SKILL.md` 后获得写稿能力：
