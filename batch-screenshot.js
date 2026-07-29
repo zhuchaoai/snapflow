@@ -349,6 +349,7 @@ function decideConcurrency(arg) {
 
 async function ensureComfyUI(coverBg) {
   const url = coverBg.comfyui?.url || 'http://127.0.0.1:8188';
+  // 先检查是否已运行
   try {
     const res = await fetch(url + '/system_stats');
     if (res.ok) { return true; }
@@ -356,13 +357,22 @@ async function ensureComfyUI(coverBg) {
   if (!coverBg.startCmd) { return false; }
   console.log('  → ComfyUI 未运行，启动中...');
   try {
-    // 用 spawn 启动持久进程，不等待退出（ComfyUI 不会自己退出）
+    // 用 exec 启动持久进程，不等待退出（ComfyUI 不会自己退出）
     const proc = exec(coverBg.startCmd, { windowsHide: true });
-    proc.unref(); // 不阻塞主进程退出
-    // 立即 resolve，不等进程结束
-    await sleep(15000);
-    const res = await fetch(url + '/system_stats');
-    if (res.ok) { return true; }
+    proc.unref();
+    // 等待就绪：15s→10s→10s，适应不同配置机器
+    const waits = [15000, 10000, 10000];
+    for (let i = 0; i < waits.length; i++) {
+      await sleep(waits[i]);
+      try {
+        const res = await fetch(url + '/system_stats');
+        if (res.ok) {
+          // 等 2 秒确保提交接口就绪，再返回 true
+          await sleep(2000);
+          return true;
+        }
+      } catch {}
+    }
   } catch {}
   return false;
 }
