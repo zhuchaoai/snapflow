@@ -233,6 +233,60 @@ node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/x
 
 ---
 
+## 正文改稿 → Slides 同步协议（MUST-FOLLOW）
+
+用户说「正文我改好了，更新Slides区」时，执行以下步骤，**逐条完成不可跳过**，否则截图出的内容跟正文对不上。
+
+### STEP 1 — 读取当前正文
+`Read` 完整稿件文件，获取最新正文内容。不要凭记忆，必须读文件。
+
+### STEP 2 — 逐字段核对清单
+
+将正文与 Slides 数据区逐项比对，核验每一项：
+
+| 核验项 | 对照正文位置 | Slides 字段 |
+|--------|-------------|-------------|
+| 封面标题核心词高亮 | 第一行标题 | `cover.title`（`<em>` 标记核心词） |
+| 封面副标题核心词高亮 | 第二行 | `cover.subtitle` |
+| 封面标签行 | 正文核心观点 | `cover.tagline` |
+| 封面徽标 | 正文关键词 | `cover.badges`（带 emoji） |
+| 内容页章节标题 | 对应段落中心句 | `content.sectionTitle` / `data.sectionTitle` / 各类型的 `sectionTitle` |
+| 卡片标题/描述 | 段落要点 | `content.cards[].title/desc` |
+| 数据页数值/标签 | 正文提到的数据 | `data.stats[].value/label` |
+| 文字行内容 | 正文金句/结论 | `text.lines[].text`（`highlight` 标记高亮行） |
+| 对比项 | 正文对比内容 | `compare.leftItems/rightItems` |
+| 总结语 | 正文结论 | `compare.summaryText` |
+| 流程步骤 | 正文步骤描述 | `flow.steps[].title/desc` |
+| 步骤 footerText | 对应段落结论 | 所有非 cover 类型的 `footerText` |
+| AI 标识行 | 正文末尾 | 必须与风格包 `writing.ai_label` 完全一致 |
+| 评论区钩子 | 评论区区域 | 评论区文字（独立区域，不映射 Slides） |
+
+### STEP 3 — 更新 Slides 数据
+
+找出所有不匹配项，逐一修正 Slides 数据区。**每改一处，心中默念改了哪处**。
+
+### STEP 4 — 自检确认
+
+修正后，再通读一遍正文，确认：
+- [ ] 每个 Slide 的文字内容都能在正文中找到对应
+- [ ] 没有遗漏任何用户修改的措辞
+- [ ] footerText 与对应段落结论一致
+- [ ] 高亮 `<em>` 标注了正确的核心词
+
+### STEP 5 — 通知用户
+
+> Slides 已同步完毕。逐项核对清单：
+> - [cover] title/subtitle/tagline/badges ✅
+> - [content/data/text/compare/flow] 全字段已对齐 ✅
+> - footerText 全部与正文一致 ✅
+> - AI 标识行已校验 ✅
+> 
+> 现在跑 md2content + 截图？
+
+用户确认后再执行下一步。
+
+---
+
 ## 封面底图生成（ComfyUI）
 
 `batch-screenshot.js` **已内置 ComfyUI 支持**，风格包里配了 `coverBg` 段就会自动执行。

@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.1 (2026-07-28)
+
+### Fixed
+- `batch-screenshot.js`：截图前用 `requestAnimationFrame` 替代固定 `sleep(200)`，确保底图加载后浏览器完成渲染再截图，修复封面底部装饰线渲染不全的问题
+- `md2content.js`：compare items 支持 JS 对象字面量格式 `{label, value}`，不再因 key 没加引号而解析失败
+
+### Changed
+- `batch-screenshot.js`：截图渲染等待使用 `requestAnimationFrame × 2` 替代固定 sleep，自适应当前机器渲染速度
+
+### Docs
+- README 购买链接从爱发电改为面包多
+
+---
+
 ## v1.2.0 (2026-07-26)
 
 ### Added

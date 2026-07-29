@@ -94,7 +94,14 @@ function parseYamlList(text) {
               obj = JSON.parse(content);
               list.push(obj);
             } catch {
-              list.push(content);
+              // 可能是 JS 对象字面量格式 {key: val}，key 没加引号
+              try {
+                const fixed = content.replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":');
+                obj = JSON.parse(fixed);
+                list.push(obj);
+              } catch {
+                list.push(content);
+              }
             }
             obj = null;
             continue;
@@ -256,10 +263,10 @@ function main() {
   const result = buildJson(items, meta, mdPath, stylePack);
 
   // 保留已有的底图文件：如果旧 content.json 里有 bgImage 且图片文件存在，不覆盖
-  const out = outputPath || path.join(imgDir, 'content.json');
-  if (fs.existsSync(out)) {
+  const oldPath = outputPath || path.join(imgDir, 'content.json');
+  if (fs.existsSync(oldPath)) {
     try {
-      const old = JSON.parse(fs.readFileSync(out, 'utf-8'));
+      const old = JSON.parse(fs.readFileSync(oldPath, 'utf-8'));
       for (const oldImg of old.images || []) {
         const newImg = result.images.find(i => i.filename === oldImg.filename);
         if (newImg && newImg.type === 'cover' && oldImg.bgImage && oldImg.bgImage !== newImg.bgImage) {

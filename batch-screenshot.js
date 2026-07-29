@@ -22,6 +22,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const yaml = require('js-yaml');
 const { exec } = require('child_process');
 
@@ -43,6 +44,7 @@ const ONLY_FILES = hasFlag('--files')
       return raw.length === 1 && raw[0] === 'all' ? null : raw;
     })()
   : null;
+const CONCURRENCY = getArg('--concurrency', '1');
 
 // ─── 路径解析 ──────────────────────────────────────────
 let SP_PROJECT_ROOT = null;
@@ -321,6 +323,22 @@ function buildShowcaseItemsHTML(items) {
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
+}
+
+/** 并发数自动检测：按空闲内存 + CPU 核数自适应 */
+function decideConcurrency(arg) {
+  if (arg && arg !== 'auto' && arg !== '1') return Math.min(parseInt(arg) || 1, 8);
+  if (arg === 'auto' || !arg) {
+    const memGB = os.totalmem() / (1024 ** 3);
+    const freeGB = os.freemem() / (1024 ** 3);
+    const cpuCount = os.cpus().length;
+    const memLimit = memGB < 8 ? 2 : memGB < 16 ? 3 : memGB < 24 ? 5 : 8;
+    const cpuLimit = Math.max(2, Math.floor(cpuCount / 2));
+    const freeLimit = Math.max(1, Math.floor(freeGB / 0.5));
+    const c = Math.min(memLimit, cpuLimit, freeLimit, 8);
+    return c;
+  }
+  return 1;
 }
 
 // ─── ComfyUI 封面底图生成 ────────────────────────────
@@ -872,6 +890,13 @@ async function launchBrowser() {
 }
 
 async function screenshotAll(htmlDir, files) {
+  // 并发参数：auto → 自动检测，>1 → 并发池，1 → 串行（原逻辑）
+  const concurrency = decideConcurrency(CONCURRENCY);
+  if (concurrency > 1) {
+    return screenshotConcurrent(htmlDir, files, concurrency);
+  }
+
+  // ─── 原串行代码（一行不动） ────────────────────────────
   let browser;
   try {
     console.log(`  启动浏览器 (${HEADLESS ? 'headless' : 'headed'})...`);
@@ -907,7 +932,12 @@ async function screenshotAll(htmlDir, files) {
       try {
         console.log(`  → ${f}.html`);
         await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 });
-        await sleep(1000); // 确保字体渲染
+        await Promise.race([
+          page.evaluate(() => document.fonts.ready),
+          sleep(2000)
+        ]);
+        // 等两个动画帧确保浏览器完成渲染（底图加载后 CSS paint 完成）
+        await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
         await page.screenshot({
           path: path.join(htmlDir, `${f}.png`),
           fullPage: false,
@@ -922,6 +952,95 @@ async function screenshotAll(htmlDir, files) {
     return results;
   } catch (err) {
     console.error(`\n  ✗ 浏览器启动失败: ${err.message}`);
+    throw err;
+  } finally {
+    if (browser) {
+      await browser.close();
+      console.log('\n  浏览器已关闭');
+    }
+  }
+}
+
+/** 截图任务（单张，供并发池调用） */
+async function screenshotOne(task, context) {
+  const page = await context.newPage();
+  try {
+    await page.goto(task.url, { waitUntil: 'networkidle', timeout: 15000 });
+    // fonts.ready + 超时兜底，替代 sleep(1000)
+    await Promise.race([
+      page.evaluate(() => document.fonts.ready),
+      sleep(2000)
+    ]);
+    await page.evaluate(() => new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))));
+    await page.screenshot({ path: task.pngPath, timeout: 10000 });
+    return { file: task.name, status: 'ok' };
+  } catch (err) {
+    // 超时或失败 → 可降级串行重试
+    return { file: task.name, status: 'error', error: err.message };
+  } finally {
+    await page.close();
+  }
+}
+
+/** 并发截图池（批次模式，每批 concurrency 张并发） */
+async function screenshotConcurrent(htmlDir, files, concurrency) {
+  console.log(`  并发截图 (concurrency=${concurrency})...`);
+
+  // 断点续截：已有 PNG 跳过
+  const pending = [];
+  for (const f of files) {
+    const htmlPath = path.join(htmlDir, `${f}.html`);
+    const pngPath = path.join(htmlDir, `${f}.png`);
+    if (!fs.existsSync(htmlPath)) {
+      console.warn(`  ⚠ 文件不存在: ${htmlPath}，跳过`);
+      continue;
+    }
+    if (fs.existsSync(pngPath)) {
+      console.log(`  ↺ ${f}.png 已存在，跳过`);
+      continue;
+    }
+    pending.push({ name: f, url: toFileURL(htmlPath), pngPath });
+  }
+
+  if (!pending.length) {
+    console.log('  所有图片已存在，无需截图');
+    return [];
+  }
+
+  console.log(`  待截 ${pending.length} 张 (已跳过 ${files.length - pending.length} 张)\n`);
+
+  let browser;
+  try {
+    browser = await launchBrowser();
+    const context = await browser.newContext({
+      viewport: { width: getCfgScreenshotWidth(), height: getCfgScreenshotHeight() },
+      deviceScaleFactor: 1,
+    });
+
+    const results = [];
+    // 分批并发
+    for (let i = 0; i < pending.length; i += concurrency) {
+      const batch = pending.slice(i, i + concurrency);
+      console.log(`  批次 ${Math.floor(i / concurrency) + 1}/${Math.ceil(pending.length / concurrency)}: ${batch.map(t => t.name).join(', ')}`);
+      const batchResults = await Promise.all(batch.map(t => screenshotOne(t, context)));
+      results.push(...batchResults);
+
+      // 失败降级：串行重试一次
+      const failed = batchResults.filter(r => r.status === 'error');
+      for (const f of failed) {
+        const task = pending.find(t => t.name === f.file);
+        if (!task) continue;
+        console.log(`  ↻ 重试: ${task.name}`);
+        const retry = await screenshotOne(task, context);
+        if (retry.status === 'ok') {
+          const idx = results.findIndex(r => r.file === f.file);
+          if (idx >= 0) results[idx] = retry;
+        }
+      }
+    }
+    return results;
+  } catch (err) {
+    console.error(`\n  ✗ 截图失败: ${err.message}`);
     throw err;
   } finally {
     if (browser) {

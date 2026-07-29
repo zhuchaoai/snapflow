@@ -16,7 +16,7 @@ compatibility: opencode
 本 Skill 启动时并行读取以下文件，作为上下文：
 
 1. `config.yaml` — 路径、模型、预设等配置
-2. 从 `config.yaml` 的 `style_pack` 字段加载风格包 JSON，提取 **`writing` 段**作为写稿约束（标题规则、字数、emoji、语气、anti-AI slop 等）；如风格包有 `writing.writingRules` 路径，一并读取该规则文件
+2. 从 `config.yaml` 的 `style_pack` 字段加载风格包 JSON，提取 **`writing` 段**作为写稿约束（标题规则、字数、emoji、语气、anti-AI slop 等），同时提取 **`quality` 段**作为质量标准（数据真实性、逻辑一致性、素材优先级）；如风格包有 `writing.writingRules` 路径，一并读取该规则文件
 3. `manuscript-template.md` — 完整稿子格式模板（含 YAML 头部、正文规范、Slides 数据区每种 type 的写法）
 4. `workflows/02-write-draft.md` — 写稿流程详情
 5. `workflows/03-generate-images.md` — 配图流程详情
