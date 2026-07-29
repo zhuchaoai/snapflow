@@ -289,6 +289,9 @@ node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/x
 
 ## 封面底图生成（ComfyUI）
 
+有两种方式，根据你的环境选择：
+
+### 方式 A：纯 Windows 环境（ComfyUI 与脚本在同一台机器）
 `batch-screenshot.js` **已内置 ComfyUI 支持**，风格包里配了 `coverBg` 段就会自动执行。
 
 流程全自动：
@@ -304,8 +307,21 @@ node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/x
 
 AI 执行 `batch-screenshot.js` 即可，无需单独跑任何底图脚本。
 
+### 方式 B：跨系统环境（WSL + Windows ComfyUI）
+
+此环境下 `batch-screenshot.js` 的集成 ComfyUI 无法直通 Windows，需先用专用脚本生成底图：
+
+```bash
+# Step 1：生成封面底图（跨系统桥接）
+node generate-cover-bg.js --config "篇目/Images/content.json" --md "篇目/Manuscript/稿件.md" [--style-pack style-packs/xxx.json]
+
+# Step 2：批量截图（检测到底图已存在，跳过 ComfyUI）
+node batch-screenshot.js --style-pack style-packs/xxx.json --config "篇目/Images/content.json"
+```
+
+### 兜底
 > 无 ComfyUI 环境时，风格包不配 `coverBg` 即可，脚本自动跳过。
-> 手动操作备选等已移除，因为脚本已覆盖所有场景。
+> 两种方式失败时，封面都使用渐变背景兜底，不阻塞截图流程。
 
 ---
 
