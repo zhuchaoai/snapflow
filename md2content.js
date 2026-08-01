@@ -179,7 +179,7 @@ function buildJson(items, meta, mdPath, stylePack) {
   const bgName = bgPattern.replace('{seq}', seqNum).replace('{abbr}', abbr);
 
   // 自动生成规范命名
-  const typeDesc = { cover: 'cover', content: 'content', compare: 'compare', data: 'data', flow: 'flow', text: 'text' };
+  const typeDesc = { cover: 'cover', content: 'content', compare: 'compare', data: 'data', flow: 'flow', text: 'text', showcase: 'showcase' };
 
   return {
     assetType: slidesAssetType,
@@ -225,6 +225,9 @@ function buildJson(items, meta, mdPath, stylePack) {
           break;
         case 'flow':
           Object.assign(img, { pageNum: item.pageNum, sectionTitle: item.sectionTitle, footerText: item.footerText || '', steps: item.steps || [] });
+          break;
+        case 'showcase':
+          Object.assign(img, { pageNum: item.pageNum, sectionTitle: item.sectionTitle, footerText: item.footerText || '', items: item.items || [] });
           break;
       }
       return img;
