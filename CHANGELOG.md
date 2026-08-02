@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.2 (2026-08-02)
+
+### Added
+- `md2content.js`：支持 `showcase` 类型解析（`pageNum`/`sectionTitle`/`footerText`/`items[{image, title, desc}]`），写稿数据区直接写 showcase 不再需要手动补 content.json
+- `md2content.js`：`showcase` 加入自动命名表，未指定 `filename` 时生成 `{seq}-{abbr}-{num}-showcase`
+- `batch-screenshot.js`：封面新增 `logoDecor` 贴纸装饰变量注入（`LOGO_DECOR`），支持字符串或 `{icon, rotate, size}` 对象，固定旋转序列保证可复现，未配置时输出空串不影响现有模板
+
+---
+
 ## v1.2.1 (2026-07-28)
 
 ### Fixed
