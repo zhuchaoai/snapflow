@@ -197,6 +197,7 @@ function buildJson(items, meta, mdPath, stylePack) {
           img.subtitle = item.subtitle || '';
           img.tagline = item.tagline || '';
           img.badges = item.badges || [];
+          img.logoDecor = item.logoDecor || [];
           img.bgImage = item.bgImage || bgName;
           img.bgPrompt = item.bgPrompt || '';
           break;

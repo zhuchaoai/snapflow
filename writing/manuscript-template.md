@@ -40,6 +40,7 @@ assetType: tool        # tool(技能资产) / identity(人设资产) / life(生�
   subtitle: <em>副标题</em>高亮词  # 同样支持<em>高亮，位置不固定</em>
   tagline: 标签行
   badges: ["🔥标签1", "📌标签2", "⭐标签3"]   # emoji 自己写，模板不加
+  logoDecor: ["⭐", {"icon": "📌", "rotate": 12}, "🎀"]   # 可选：封面 logo 区上方装饰贴纸，每期可换；支持字符串或指定角度/字号的对象
   bgPrompt: "描述画面的英文提示词，传给 ComfyUI 生成底图"
 
 # ── 内容卡片 ──
@@ -135,6 +136,7 @@ assetType: tool        # tool(技能资产) / identity(人设资产) / life(生�
 - emoji 全文不超过 3 个，放在段落转折处或结论前
 - 每篇 1 个主题，不塞多个方向
 - badges 的 emoji 自己加，按内容选匹配的图形符号
+- logoDecor 可选，不填则封面无贴纸装饰；每期可换不同 emoji 组合
 - AI 标识行从风格包 `writing.ai_label` 自动读取，无需手写
 - compare 的 vsText 字段已废弃，自定义文字请用 summaryText
 - 所有 filename 需唯一，建议格式：`{序号}-{缩写}-{序号2}-{类型}`

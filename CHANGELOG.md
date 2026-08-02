@@ -6,6 +6,8 @@
 - `md2content.js`：支持 `showcase` 类型解析（`pageNum`/`sectionTitle`/`footerText`/`items[{image, title, desc}]`），写稿数据区直接写 showcase 不再需要手动补 content.json
 - `md2content.js`：`showcase` 加入自动命名表，未指定 `filename` 时生成 `{seq}-{abbr}-{num}-showcase`
 - `batch-screenshot.js`：封面新增 `logoDecor` 贴纸装饰变量注入（`LOGO_DECOR`），支持字符串或 `{icon, rotate, size}` 对象，固定旋转序列保证可复现，未配置时输出空串不影响现有模板
+- `md2content.js`：cover 分支透传 `logoDecor` 字段，写稿数据区配置后直达 content.json
+- `writing/manuscript-template.md`：Slides 数据区补 `logoDecor` 字段示例与写稿规范说明
 
 ---
 
