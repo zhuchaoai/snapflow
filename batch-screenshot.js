@@ -255,6 +255,22 @@ function buildBadgesHTML(badges) {
   return badges.map(b => `<span>${b}</span>`).join('\n      ');
 }
 
+// logo 区上部装饰贴纸："⭐" 或 {"icon":"⭐","rotate":-12,"size":"64px"}
+function buildLogoDecorHTML(decors) {
+  if (!decors || !decors.length) return '';
+  const rotSeq = [-14, 10, -8, 16, -12, 8, -6, 14]; // 固定旋转序列（可复现）
+  return decors.map((d, i) => {
+    const item = (typeof d === 'string') ? { icon: d } : (d || {});
+    const icon = item.icon || '';
+    if (!icon) return '';
+    const rot = item.rotate != null ? item.rotate : rotSeq[i % rotSeq.length];
+    const size = item.size || '58px';
+    const left = 10 + i * 82;
+    const top = 150 - (i % 2) * 55;
+    return `<span class="logo-deco" style="left:${left}px; top:${top}px; font-size:${size}; transform:rotate(${rot}deg)">${icon}</span>`;
+  }).join('\n      ');
+}
+
 function buildCardsHTML(cards) {
   if (!cards || !cards.length) return '';
   return cards.map(c => `
@@ -597,6 +613,7 @@ function fillCoverVars(img, type, vars) {
   vars.PILL_NAME = img.pill || '';
   vars.TAGLINE = img.tagline || '';
   vars.BADGES = buildBadgesHTML(img.badges);
+  vars.LOGO_DECOR = buildLogoDecorHTML(img.logoDecor || []);
   vars.BG_IMAGE = img.bgImage
     ? `background-image: url('${img.bgImage}');`
     : `background: transparent;`;
