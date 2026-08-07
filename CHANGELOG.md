@@ -9,6 +9,9 @@
 - `md2content.js`：cover 分支透传 `logoDecor` 字段，写稿数据区配置后直达 content.json
 - `writing/manuscript-template.md`：Slides 数据区补 `logoDecor` 字段示例与写稿规范说明
 
+### Changed
+- `md2content.js`：底图 `bgImage` 的 abbr 优先复用封面配图 filename 中的缩写（如 `008-method-01-cover` → `008-method-cover-bg.png`），保证底图与配图命名一致；filename 命名规则不变
+
 ---
 
 ## v1.2.1 (2026-07-28)

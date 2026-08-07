@@ -174,9 +174,14 @@ function buildJson(items, meta, mdPath, stylePack) {
   const seqNum = seqMatch ? seqMatch[1] : '001';
   const abbr = assetAbbr(mdPath);
 
-  // bgImage 命名模式：风格包 > 默认
+  // bgImage 命名模式：风格包 > 默认；abbr 优先复用封面配图 filename 里的缩写，保证与配图一致
   const bgPattern = naming.pattern || '{seq}-{abbr}-cover-bg.png';
-  const bgName = bgPattern.replace('{seq}', seqNum).replace('{abbr}', abbr);
+  const coverItem = items.find(i => i.type === 'cover');
+  const coverAbbr = coverItem?.filename && coverItem.filename.split('-').length >= 3
+    ? coverItem.filename.split('-')[1]
+    : null;
+  const bgAbbr = coverAbbr || abbr;
+  const bgName = bgPattern.replace('{seq}', seqNum).replace('{abbr}', bgAbbr);
 
   // 自动生成规范命名
   const typeDesc = { cover: 'cover', content: 'content', compare: 'compare', data: 'data', flow: 'flow', text: 'text', showcase: 'showcase' };
