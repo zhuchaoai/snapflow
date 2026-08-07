@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.3 (2026-08-02)
+
+### Changed
+- 写稿节奏规则统一：废弃"一句一行、短句堆叠"（残留于 manuscript-template / 自检清单 / 风格包 quality.structure），统一为"段落叙事为主，爆发/转折/金句独立成行，节奏跟随情绪"
+- 写稿约束引入 `style_anchor` 风格锚概念：风格包自带风格 DNA（直接进场景/数字是骨架/转折有人物/金句带情绪/收尾给行动），外部规范文件降级为可选增强
+- `writing/SKILL.md` 与 `02-write-draft.md`：写稿加载指令显式要求逐条应用 style_anchor
+
+---
+
 ## v1.2.2 (2026-08-02)
 
 ### Added
