@@ -203,7 +203,8 @@ function buildJson(items, meta, mdPath, stylePack) {
           img.tagline = item.tagline || '';
           img.badges = item.badges || [];
           img.logoDecor = item.logoDecor || [];
-          img.bgImage = item.bgImage || bgName;
+          // 风格包 coverBg.disabled 时封面无底图（渐变兜底）；否则生成默认底图名（由风格包或默认命名决定）
+          img.bgImage = item.bgImage || (stylePack?.coverBg?.disabled ? '' : bgName);
           img.bgPrompt = item.bgPrompt || '';
           break;
         case 'content':
@@ -266,7 +267,13 @@ function main() {
   }
 
   const root = path.dirname(path.dirname(mdPath));
-  const imgDir = outputPath ? path.resolve(path.dirname(outputPath)) : path.join(root, 'Images');
+  // rewriter 稿件位于 篇目/Distribute/{platform}/稿件.md（三级），输出到稿件同级 Images；
+  // 主平台稿件位于 篇目/Manuscript/稿件.md（二级），输出到 篇目/Images（保持原行为）
+  const mdDir = path.dirname(mdPath);
+  const inDistribute = /[\\/]Distribute[\\/][^\\/]+$/.test(mdDir);
+  const imgDir = outputPath
+    ? path.resolve(path.dirname(outputPath))
+    : inDistribute ? path.join(mdDir, 'Images') : path.join(root, 'Images');
   if (!fs.existsSync(imgDir)) fs.mkdirSync(imgDir, { recursive: true });
 
   const result = buildJson(items, meta, mdPath, stylePack);
