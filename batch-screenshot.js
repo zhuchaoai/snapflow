@@ -1,21 +1,24 @@
 /**
  * batch-screenshot.js — 批量配图截图脚本
  *
- * 两种模式：
+ * 三种模式：
  *   1. template（默认）：读 content.json → 填模板 → 生成 HTML → 截图
  *   2. direct：直接截图指定目录下的现有 HTML 文件
+ *   3. 多平台合并：--dirs "platform:inDir:outDir:stylePack,..." 或 --dirs "platform,..."
  *
  * 用法：
  *   node batch-screenshot.js [选项]
  *
  * 选项：
- *   --style-pack style-pack.json  风格包路径（可选，所有配置的单一来源）
+ *   --style-pack style-pack.json  风格包路径或名称（可选，所有配置的单一来源）
  *   --cfg config.yaml             config.yaml 路径（后备，无风格包时使用）
  *   --mode template|direct        模式（默认 template）
  *   --config content.json          content.json 路径（template 模式必填）
  *   --dir ./Images                 HTML 目录（direct 模式必填）
+ *   --dirs "platform:in:out:sp,..."  多平台合并截图（四段式）或 --dirs "toutiao,douyin"（自动推导）
  *   --files 01-cover,02-painpoint 只处理指定文件（不含扩展名，修改模式用）
  *   --headless true|false          是否无头模式（默认 true）
+ *   --concurrency auto|N           并发截图数（auto=按内存/CPU 自适应，上限 8；默认 1）
  *   --template-dir templates/premium  模板目录（默认 templates/default/，专用模板用此切换）
  */
 
@@ -46,6 +49,7 @@ const ONLY_FILES = hasFlag('--files')
     })()
   : null;
 const CONCURRENCY = getArg('--concurrency', '1');
+const DIRS_RAW = getArg('--dirs', null); // 多平台合并截图："platform:inDir:outDir:stylePack,..." 或 "platform,..."
 
 // ─── 路径解析 ──────────────────────────────────────────
 let SP_PROJECT_ROOT = null;
@@ -778,9 +782,9 @@ function fillShowcaseVars(img, type, vars) {
 }
 
 // ─── 模板模式：生成 HTML ─────────────────────────────
-function generateHTML(config, articleDir, onlyFiles) {
+function generateHTML(config, articleDir, onlyFiles, outDirOverride) {
   const seriesDir = resolveTemplateDir();
-  const outDir = path.resolve(articleDir, config.outputDir);
+  const outDir = outDirOverride ? path.resolve(outDirOverride) : path.resolve(articleDir, config.outputDir);
 
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir, { recursive: true });
@@ -997,6 +1001,9 @@ async function screenshotAll(htmlDir, files) {
 async function screenshotOne(task, context) {
   const page = await context.newPage();
   try {
+    if (task.viewport) {
+      await page.setViewportSize({ width: task.viewport.width, height: task.viewport.height });
+    }
     await page.goto(task.url, { waitUntil: 'networkidle', timeout: 15000 });
     // fonts.ready + 超时兜底，替代 sleep(1000)
     await Promise.race([
@@ -1040,17 +1047,22 @@ async function screenshotConcurrent(htmlDir, files, concurrency) {
   }
 
   console.log(`  待截 ${pending.length} 张 (已跳过 ${files.length - pending.length} 张)\n`);
+  return screenshotPool(pending, concurrency);
+}
+
+/** 多平台合并截图：所有平台任务汇成一个并发池 */
+async function screenshotPool(pending, concurrency) {
+  console.log(`  合并截图池: ${pending.length} 张 (concurrency=${concurrency})...`);
 
   let browser;
   try {
     browser = await launchBrowser();
     const context = await browser.newContext({
-      viewport: { width: getCfgScreenshotWidth(), height: getCfgScreenshotHeight() },
+      viewport: { width: 1242, height: 1660 }, // 每个任务截图前会按自己的尺寸覆盖
       deviceScaleFactor: 1,
     });
 
     const results = [];
-    // 分批并发
     for (let i = 0; i < pending.length; i += concurrency) {
       const batch = pending.slice(i, i + concurrency);
       console.log(`  批次 ${Math.floor(i / concurrency) + 1}/${Math.ceil(pending.length / concurrency)}: ${batch.map(t => t.name).join(', ')}`);
@@ -1083,6 +1095,97 @@ async function screenshotConcurrent(htmlDir, files, concurrency) {
 }
 
 // ─── 主流程 ───────────────────────────────────────────
+/** 解析 --dirs：逗号分平台，每项四段 platform:inDir:outDir:stylePack 或单段 platform（自动推导） */
+function parseDirsSpec(raw) {
+  return raw.split(',').map(s => s.trim()).filter(Boolean).map(seg => {
+    const m = seg.match(/^([^:]+):(.+):(.+):(.+)$/);
+    if (m) {
+      return { name: m[1].trim(), inDir: m[2].trim(), outDir: m[3].trim(), stylePack: m[4].trim() };
+    }
+    return { name: seg, inDir: null, outDir: null, stylePack: null };
+  });
+}
+
+/** 多平台合并：逐平台生成 HTML（各自风格包）→ 合并截图池（各自尺寸/输出目录） */
+async function runDirs(raw) {
+  const specs = parseDirsSpec(raw);
+  const concurrency = decideConcurrency(CONCURRENCY);
+  const pending = [];
+
+  for (const spec of specs) {
+    const inDir = resolveRelPath(spec.inDir || `Distribute/${spec.name}/Images`);
+    const outDir = resolveRelPath(spec.outDir || spec.inDir || `Distribute/${spec.name}/Images`);
+    const stylePack = resolveRelPath(spec.stylePack || `rewriter/platforms/${spec.name}/style-pack.json`);
+
+    if (!fs.existsSync(stylePack)) {
+      console.error(`✗ 平台 ${spec.name} 风格包不存在: ${stylePack}`);
+      console.error('  用法: --dirs "platform:inDir:outDir:stylePack,..." 或 --dirs "platform,..."（自动推导）');
+      process.exit(1);
+    }
+    loadStylePack(stylePack);
+
+    const configPath = path.join(inDir, 'content.json');
+    if (!fs.existsSync(configPath)) {
+      console.error(`✗ 平台 ${spec.name} 无 content.json: ${configPath}`);
+      process.exit(1);
+    }
+    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+    config.images = expandShowcaseImages(config.images);
+    const articleDir = path.dirname(inDir);
+
+    console.log(`\n── 平台 ${spec.name} (${config.images.length} 张, ${getCfgScreenshotWidth()}×${getCfgScreenshotHeight()}) ──`);
+    await generateCoverBackgrounds(config, articleDir);
+    const valid = validateConfig(config, articleDir);
+    if (!valid) {
+      console.error(`✗ 平台 ${spec.name} 前置校验未通过`);
+      process.exit(1);
+    }
+    generateHTML(config, articleDir, null, outDir);
+
+    for (const img of config.images) {
+      const f = img.filename;
+      const htmlPath = path.join(outDir, `${f}.html`);
+      if (!fs.existsSync(htmlPath)) {
+        console.warn(`  ⚠ 无 HTML: ${f}.html，跳过`);
+        continue;
+      }
+      const pngPath = path.join(outDir, `${f}.png`);
+      if (fs.existsSync(pngPath)) {
+        console.log(`  ↺ ${spec.name}/${f}.png 已存在，跳过`);
+        continue;
+      }
+      pending.push({
+        name: `${spec.name}/${f}`,
+        url: toFileURL(htmlPath),
+        pngPath,
+        viewport: { width: getCfgScreenshotWidth(), height: getCfgScreenshotHeight() },
+      });
+    }
+  }
+
+  if (!pending.length) {
+    console.log('\n所有平台图片已存在，无需截图');
+    return;
+  }
+
+  console.log(`\n── 合并截图 (${pending.length} 张, ${specs.length} 平台, concurrency=${concurrency}) ──`);
+  const results = await screenshotPool(pending, concurrency);
+
+  console.log('\n── 结果 ──────────────────────────────');
+  const ok = results.filter(r => r.status === 'ok').length;
+  const failed = results.filter(r => r.status === 'error').length;
+  console.log(`  ✓ 成功: ${ok} / ${failed ? `✗ 失败: ${failed}` : ''}`);
+  if (failed) {
+    results.filter(r => r.status === 'error').forEach(r => {
+      console.log(`  ✗ ${r.file} - ${r.error}`);
+    });
+  }
+  for (const spec of specs) {
+    const outDir = resolveRelPath(spec.outDir || spec.inDir || `Distribute/${spec.name}/Images`);
+    console.log(`  📁 ${spec.name}: ${outDir}`);
+  }
+}
+
 async function main() {
   console.log('═══════════════════════════════════════');
   console.log('  批量截图脚本 batch-screenshot.js');
@@ -1091,6 +1194,12 @@ async function main() {
   console.log(`  channel: ${CHANNEL || 'auto (msedge→chrome→chromium)'}`);
   if (CFG_PATH) console.log(`  config: ${CFG_PATH}`);
   console.log('═══════════════════════════════════════\n');
+
+  // 多平台合并截图：--dirs 优先，跳过单平台流程
+  if (DIRS_RAW) {
+    await runDirs(DIRS_RAW);
+    return;
+  }
 
   // 加载配置：优先 --style-pack，其次 cfg 中的 style_pack 字段，最后 cfg 内联字段
   loadConfig(CFG_PATH);

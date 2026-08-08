@@ -13,27 +13,47 @@ const os = require('os');
 const readline = require('readline');
 
 const STYLE_PACKS_DIR = path.resolve(__dirname, 'style-packs');
+const PLATFORMS_DIR = path.resolve(__dirname, 'rewriter', 'platforms');
 const USAGE_FILE = path.join(os.homedir(), '.config', 'opencode', 'style-pack-usage.json');
 
-// 扫描 style-packs/ 下所有风格包，返回 [{file, path, name}]
+// 扫描主目录 style-packs/*.json + 副平台 rewriter/platforms/*/style-pack.json
+// 返回 [{file, path, name, group}]，file 含相对路径前缀避免重名（如 toutiao/style-pack.json）
 function listStylePacks() {
-  if (!fs.existsSync(STYLE_PACKS_DIR)) return [];
-  return fs.readdirSync(STYLE_PACKS_DIR)
-    .filter(f => f.endsWith('.json'))
-    .map(f => {
+  const packs = [];
+
+  if (fs.existsSync(STYLE_PACKS_DIR)) {
+    for (const f of fs.readdirSync(STYLE_PACKS_DIR)) {
+      if (!f.endsWith('.json')) continue;
       const abs = path.join(STYLE_PACKS_DIR, f);
       try {
         const pack = JSON.parse(fs.readFileSync(abs, 'utf-8'));
-        return {
+        packs.push({
           file: f,
           path: abs,
           name: pack.pack?.name || f.replace(/\.json$/, ''),
-        };
-      } catch {
-        return null; // 解析失败的文件跳过
-      }
-    })
-    .filter(Boolean);
+          group: 'main',
+        });
+      } catch { /* 解析失败跳过 */ }
+    }
+  }
+
+  if (fs.existsSync(PLATFORMS_DIR)) {
+    for (const platform of fs.readdirSync(PLATFORMS_DIR)) {
+      const abs = path.join(PLATFORMS_DIR, platform, 'style-pack.json');
+      if (!fs.existsSync(abs)) continue;
+      try {
+        const pack = JSON.parse(fs.readFileSync(abs, 'utf-8'));
+        packs.push({
+          file: path.join(platform, 'style-pack.json'),
+          path: abs,
+          name: pack.pack?.name || platform,
+          group: 'platform',
+        });
+      } catch { /* 解析失败跳过 */ }
+    }
+  }
+
+  return packs;
 }
 
 // 读取使用频率
@@ -72,17 +92,27 @@ function matchByName(packs, query) {
   ) || null;
 }
 
-// 交互菜单选择
+// 交互菜单选择（主平台风格包 / 副平台风格包分组显示）
 async function pickInteractive(packs) {
   const usage = loadUsage();
   const sorted = sortByUsage(packs);
-  console.log('\n📦 可用风格包（按使用频率排序）:');
-  sorted.forEach((p, i) => {
-    const u = usage[p.file] || 0;
-    const hot = u > 0 ? ` 🔥${u}次` : '';
-    const top = i === 0 ? ' ⭐' : '';
-    console.log(`  ${i + 1}. ${p.name}${top}${hot}  (${p.file})`);
-  });
+  const groups = [
+    { label: '主平台风格包（style-packs/）', packs: sorted.filter(p => p.group === 'main') },
+    { label: '副平台风格包（rewriter/platforms/）', packs: sorted.filter(p => p.group === 'platform') },
+  ].filter(g => g.packs.length > 0);
+
+  console.log('\n📦 可用风格包:');
+  let n = 0;
+  for (const g of groups) {
+    console.log(`\n  ${g.label}`);
+    for (const p of g.packs) {
+      n++;
+      const u = usage[p.file] || 0;
+      const hot = u > 0 ? ` 🔥${u}次` : '';
+      const top = n === 1 ? ' ⭐' : '';
+      console.log(`  ${n}. ${p.name}${top}${hot}  (${p.file})`);
+    }
+  }
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   return new Promise(resolve => {
