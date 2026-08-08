@@ -25,6 +25,7 @@ const path = require('path');
 const os = require('os');
 const yaml = require('js-yaml');
 const { exec } = require('child_process');
+const { resolveStylePack, recordUsage } = require('./style-pack-resolver.js');
 
 // ─── 参数解析 ────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -1093,10 +1094,27 @@ async function main() {
 
   // 加载配置：优先 --style-pack，其次 cfg 中的 style_pack 字段，最后 cfg 内联字段
   loadConfig(CFG_PATH);
-  if (!SP_PATH && CFG?.style_pack) {
+  if (SP_PATH) {
+    // 路径存在 → 直接用；否则按名称匹配（如 --style-pack 炭火）
+    const absPath = resolveRelPath(SP_PATH);
+    if (fs.existsSync(absPath)) {
+      loadStylePack(absPath);
+      recordUsage(path.basename(absPath));
+    } else {
+      const resolved = await resolveStylePack(SP_PATH);
+      loadStylePack(resolved.path);
+      recordUsage(resolved.file);
+    }
+  } else if (CFG?.style_pack) {
     loadStylePack(CFG.style_pack);
+  } else if (process.stdin.isTTY) {
+    // 未指定且交互终端 → 弹菜单选择
+    const picked = await resolveStylePack();
+    if (picked) {
+      loadStylePack(picked.path);
+      recordUsage(picked.file);
+    }
   }
-  loadStylePack(SP_PATH);
 
   let htmlDir;
 
