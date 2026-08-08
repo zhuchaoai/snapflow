@@ -1,0 +1,176 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "platform": "toutiao",
+    "note": "头条号资讯感风格包 — 1024×678 横图，浅底冷静新闻感"
+  },
+  "pack": {
+    "name": "头条号 · 资讯",
+    "version": "1.0.0",
+    "author": "rewriter",
+    "description": "浅灰白底 + 藏蓝主色 + 正红点缀，硬朗黑体，左对齐，新闻卡片式。头条号 1024×678 横图专用。"
+  },
+  "brand": {
+    "name": "Snapflow",
+    "tagline": "内容自动化工作流"
+  },
+  "paths": {
+    "templateDir": "rewriter/platforms/toutiao/templates"
+  },
+  "colors": {
+    "pageBg": "#f5f5f7",
+    "gridOverlay": {
+      "color": "rgba(43,76,126,0.03)",
+      "size": "40px"
+    },
+    "tokens": {
+      "textBody": "#1a1a1a",
+      "textMuted": "#666666",
+      "textLabel": "#2b4c7e",
+      "brandColor": "#2b4c7e",
+      "footerBorder": "rgba(43,76,126,0.15)"
+    },
+    "types": {
+      "cover": {
+        "pageBg": "#f5f5f7",
+        "bottomBar": "#2b4c7e, #3a5f9e, #c8342b, #2b4c7e",
+        "mainTitle": "#1a1a1a",
+        "titleHl": "linear-gradient(135deg, #c8342b, #e05545)",
+        "subtitle": "#2b4c7e",
+        "tagline": "#666666",
+        "badgeText": "#ffffff",
+        "brandBar": "#2b4c7e",
+        "badgeBg": "#2b4c7e",
+        "badgeBorder": "#2b4c7e",
+        "badgeNameColor": "#ffffff",
+        "assetType": "#c8342b",
+        "dividerGradient": "linear-gradient(90deg, #c8342b, rgba(200,52,43,0.2))",
+        "accent": "#c8342b"
+      },
+      "content": {
+        "pageBg": "#f5f5f7",
+        "bottomBar": "#2b4c7e, #3a5f9e, #c8342b, #2b4c7e",
+        "pageNum": "#2b4c7e",
+        "sectionTitle": "#1a1a1a",
+        "cardBorder": "#e8e8e8",
+        "cardBg": "#ffffff",
+        "cardTitle": "#1a1a1a",
+        "cardDesc": "#666666",
+        "footerText": "#666666",
+        "accent": "#c8342b"
+      },
+      "text": {
+        "pageBg": "#f5f5f7",
+        "bottomBar": "#2b4c7e, #3a5f9e, #c8342b, #2b4c7e",
+        "pageNum": "#2b4c7e",
+        "sectionTitle": "#1a1a1a",
+        "textBorder": "#e8e8e8",
+        "textBg": "#ffffff",
+        "textColor": "#1a1a1a",
+        "textHighlightColor": "#c8342b",
+        "footerText": "#666666",
+        "accent": "#c8342b"
+      },
+      "data": {
+        "pageBg": "#f5f5f7",
+        "bottomBar": "#2b4c7e, #3a5f9e, #c8342b, #2b4c7e",
+        "pageNum": "#2b4c7e",
+        "sectionTitle": "#1a1a1a",
+        "statBorder": "#e8e8e8",
+        "statBg": "#ffffff",
+        "statHighlightBorder": "#c8342b",
+        "statHighlightBg": "rgba(200,52,43,0.06)",
+        "statValueColor": "#2b4c7e",
+        "statHighlightValueColor": "#c8342b",
+        "statLabelColor": "#666666",
+        "footerText": "#666666",
+        "accent": "#c8342b"
+      },
+      "compare": {
+        "pageBg": "#f5f5f7",
+        "bottomBar": "#2b4c7e, #3a5f9e, #c8342b, #2b4c7e",
+        "pageNum": "#2b4c7e",
+        "sectionTitle": "#1a1a1a",
+        "vsBg": "linear-gradient(135deg, #c8342b, #e05545)",
+        "vsBorder": "#c8342b",
+        "vsText": "#ffffff",
+        "summaryBorder": "rgba(43,76,126,0.2)",
+        "summaryBg": "#ffffff",
+        "summaryText": "#1a1a1a",
+        "left": {
+          "headerBg": "rgba(200,52,43,0.06)",
+          "headerBorder": "rgba(200,52,43,0.25)",
+          "headerText": "#c8342b",
+          "headerSub": "#666666",
+          "cardBorder": "#e8e8e8",
+          "cardBg": "#ffffff",
+          "cardLabel": "#999999",
+          "cardValue": "#1a1a1a",
+          "itemAccent": "#c8342b"
+        },
+        "right": {
+          "headerBg": "rgba(43,76,126,0.06)",
+          "headerBorder": "rgba(43,76,126,0.25)",
+          "headerText": "#2b4c7e",
+          "headerSub": "#666666",
+          "cardBorder": "#e8e8e8",
+          "cardBg": "#ffffff",
+          "cardLabel": "#999999",
+          "cardValue": "#1a1a1a",
+          "itemAccent": "#2b4c7e"
+        }
+      }
+    }
+  },
+  "typography": {
+    "fontFamily": "-apple-system, \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
+    "cover": {
+      "title": "76px",
+      "subtitle": "44px",
+      "tagline": "28px",
+      "badge": "26px",
+      "brandBar": "24px",
+      "brandBadge": "24px",
+      "assetType": "26px"
+    },
+    "content": {
+      "pageNum": "32px",
+      "sectionTitle": "44px",
+      "cardTitle": "32px",
+      "cardDesc": "26px",
+      "iconSize": "42px",
+      "cardRadius": "6px"
+    },
+    "text": {
+      "pageNum": "32px",
+      "sectionTitle": "44px",
+      "line": "32px",
+      "highlightLine": "34px"
+    },
+    "data": {
+      "pageNum": "32px",
+      "sectionTitle": "44px",
+      "statValue": "68px",
+      "statLabel": "26px"
+    },
+    "compare": {
+      "pageNum": "36px",
+      "sectionTitle": "40px",
+      "headerLabel": "30px",
+      "headerSub": "22px",
+      "itemLabel": "22px",
+      "itemValue": "28px",
+      "vsText": "26px",
+      "summaryText": "28px"
+    }
+  },
+  "screenshot": {
+    "width": 1024,
+    "height": 678,
+    "maxShowcaseItems": 2,
+    "headless": true
+  },
+  "coverBg": {
+    "disabled": true
+  }
+}

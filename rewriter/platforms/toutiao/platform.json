@@ -1,0 +1,75 @@
+{
+  "platform": "toutiao",
+  "displayName": "头条号",
+  "version": "1.0.0",
+  "rewrite": {
+    "title": {
+      "maxLen": 30,
+      "removeEmoji": true,
+      "formulas": [
+        "[数字/结果] + [核心观点] + [补充说明]",
+        "获客型：[极刚痛点] + [解法方向]"
+      ],
+      "examples": [
+        "方法教不会没有思想的人 → 用AI半年后我发现：方法可以复制，思维复制不了",
+        "配好OpenCode还要装技能 → 给OpenCode装这5个技能，AI效率翻倍（实测）",
+        "建筑行业不行了？不是行业的问题，是你的能力结构问题"
+      ]
+    },
+    "body": {
+      "targetLength": "800-1500",
+      "action": "expand",
+      "note": "小红书正文300-400字，头条要展开到800-1500字（原创声明需≥300字，青云计划需≥900字，社区共识1000字左右收益最优）。补充逻辑、背景、案例，但不注水",
+      "paragraph": "每段 3-4 行，保持阅读连贯，不用小红书的短句堆叠",
+      "opening": "开头必须抓人：场景化代入或问题式开头（拆解爆文发现场景化开头最能留人），前200字内自然嵌入 2-3 个核心关键词，禁止铺垫过长",
+      "sectionStyle": "文字小标题",
+      "sectionNote": "用 ## 小标题分段（2-4 个，每个≤10字），替代小红书的 emoji 分隔",
+      "emojiPolicy": "remove",
+      "emojiNote": "去掉大部分 emoji（无官方禁令，但头条用户偏好清晰严肃标题，少用为宜）",
+      "boldPolicy": "只强调核心句，减少加粗密度",
+      "ending": "结尾留开放式问题引导评论（优质评论率≥0.5% 可触发二次推荐）"
+    },
+    "redlines": [
+      "不虚构事实与数据：所有数字、案例、引用必须有源稿依据，不得编造",
+      "不夸大效果：不使用「绝对」「一定」「保证」等承诺性表述",
+      "禁止标题党：不得夸张、低俗标题，标题与正文必须一致（题文不符会被限流）",
+      "AI 标识（强制法规）：本文由 AI 辅助生成，经作者原创加工优化——改写稿文末必须保留 AI 声明行，发布时不得删除 AI 标识（《人工智能生成合成内容标识办法》2025-09-01 起实施）",
+      "保留方法论、思考过程、避坑经验"
+    ],
+    "sourceSelect": {
+      "prefer": ["教程/干货类（信息密度高）", "避坑经验类（有话题性）", "方法论/思考类（适合展开）", "获客型认知观点类"],
+      "avoid": ["日常碎片/打卡类", "互动类内容", "纯配图展示类"]
+    },
+    "format": {
+      "note": "以下为结构骨架硬约束：改写时严格复制 example-稿件.md 的骨架，只替换内容。每次产出的结构必须一致，禁止自由漂移",
+      "frontmatter": ["title", "type", "series", "platform", "source", "status", "created"],
+      "frontmatterNote": "YAML 头部字段必须齐全，title 与正文标题一致",
+      "headingStyle": "##",
+      "headingNote": "小标题一律用 ## 一级，不用【】不用加粗当标题",
+      "subsectionCount": { "min": 2, "max": 4 },
+      "subsectionNote": "正文 2-4 个 ## 小标题分段（每个≤10字），每个小标题下 1-2 段",
+      "requireAIDeclaration": true,
+      "aiDeclarationNote": "文末保留『AI 参与：…』或『本文由 AI 辅助生成』声明（法规强制）",
+      "exampleFile": "example-稿件.md",
+      "exampleNote": "STEP 2 改写时先读 example-稿件.md，逐字段复制其结构骨架"
+    }
+  },
+  "slides": {
+    "maxImages": 2,
+    "note": "头条号只需 1-2 张关键图，不照搬主稿件的 5-8 张。从主稿件提炼最核心的数据/对比/结论做图",
+    "preferTypes": ["cover", "data", "compare"],
+    "coverNote": "封面是资讯感横图，标题去 emoji、去 <em> 高亮标记（那是小红书专用）",
+    "titlePolicy": "Slides 里的 title/sectionTitle 用纯文字，不加 <em> 标记",
+    "yamlOnly": true,
+    "yamlNote": "禁止 JSON 数组，禁止照抄 _task.md 里的 JSON 示例",
+    "bodyImageNote": "发布时正文每 300 字左右插入一张配图（900×600 或 600×400，JPG），缓解长文阅读压力"
+  },
+  "screenshot": {
+    "width": 1024,
+    "height": 678,
+    "aspectRatio": "3:2",
+    "keepCount": "1-2",
+    "keepNote": "头条号只保留1-2张关键截图（封面+数据/对比），其余去掉；封面 3:2 或 16:9 均可（1024×678 合规），无精修图可纯文字发布",
+    "templateDir": "见 style-pack.json 的 paths.templateDir（引擎只读风格包）"
+  }
+}
