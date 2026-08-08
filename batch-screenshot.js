@@ -577,7 +577,8 @@ function validateConfig(config, articleDir) {
       if (img.bgImage) {
         const bgPath = path.join(outDir, img.bgImage);
         if (!fs.existsSync(bgPath)) {
-          const defaultBg = resolveRelPath('demo/cover-bg-default.png');
+          const packDefaultBg = getCfgCoverBg()?.defaultImage;
+          const defaultBg = packDefaultBg ? resolveRelPath(packDefaultBg) : resolveRelPath('demo/cover-bg-default.png');
           if (fs.existsSync(defaultBg)) {
             fs.copyFileSync(defaultBg, bgPath);
             console.log(`  → 已复制默认底图 -> ${img.bgImage}`);
@@ -1038,7 +1039,12 @@ async function screenshotConcurrent(htmlDir, files, concurrency) {
       console.log(`  ↺ ${f}.png 已存在，跳过`);
       continue;
     }
-    pending.push({ name: f, url: toFileURL(htmlPath), pngPath });
+    pending.push({
+      name: f,
+      url: toFileURL(htmlPath),
+      pngPath,
+      viewport: { width: getCfgScreenshotWidth(), height: getCfgScreenshotHeight() },
+    });
   }
 
   if (!pending.length) {
