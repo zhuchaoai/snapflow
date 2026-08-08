@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.5 (2026-08-08)
+
+### Added
+- `batch-screenshot.js`：新增**多平台合并截图** `--dirs` 参数。一次命令并发截图多个平台的配图：
+  - 四段式 `--dirs "toutiao:输入目录:输出目录:风格包路径,douyin:..."`：显式指定输入（读 content.json）/ 输出（PNG 落盘）/ 风格包
+  - 简化式 `--dirs "toutiao,douyin"`：自动推导 `Distribute/{平台}/Images` + `rewriter/platforms/{平台}/style-pack.json`
+  - 每个平台任务绑定自己的尺寸（如头条 1024×678、小红书 1242×1660 同池共存）、模板、输出目录，文件名带平台前缀不混淆
+- `style-pack-resolver.js`：扫描范围扩展至 `rewriter/platforms/*/style-pack.json`，交互菜单按「主平台风格包 / 副平台风格包」分组显示，短名匹配同样适用（如 `--style-pack 头条`）
+
+### Changed
+- `batch-screenshot.js`：并发截图逻辑抽取为通用 `screenshotPool`，单平台与多平台共用；`generateHTML` 支持输出目录覆盖
+
+---
+
 ## v1.2.4 (2026-08-08)
 
 ### Added
