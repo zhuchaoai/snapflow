@@ -270,7 +270,8 @@ function main() {
   // rewriter 稿件位于 篇目/Distribute/{platform}/稿件.md（三级），输出到稿件同级 Images；
   // 主平台稿件位于 篇目/Manuscript/稿件.md（二级），输出到 篇目/Images（保持原行为）
   const mdDir = path.dirname(mdPath);
-  const inDistribute = /[\\/]Distribute[\\/][^\\/]+$/.test(mdDir);
+  // 兼容两种形态：相对路径 "Distribute/toutiao"（SKILL.md 推荐用法）与绝对路径 "D:/篇目/Distribute/toutiao"
+  const inDistribute = /(^|[\\/])Distribute[\\/][^\\/]+$/.test(mdDir);
   const imgDir = outputPath
     ? path.resolve(path.dirname(outputPath))
     : inDistribute ? path.join(mdDir, 'Images') : path.join(root, 'Images');
