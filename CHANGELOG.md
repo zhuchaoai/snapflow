@@ -1,5 +1,20 @@
 # Changelog
 
+## v2.0.0 (2026-08-08)
+
+### Added
+- **Rewriter 多平台改写器开源**：`rewriter/` 引擎（rewrite.js 任务包生成 + slides-parser.js 解析 + SKILL.md 工作流）+ 头条号示例套件（platform.json 改写规则 / style-pack.json 风格包 / 7 套横版模板 / example-稿件.md 结构样板）
+- **多平台分发链路**：小红书主稿件 → rewrite.js 生成改写任务包 → AI 按平台规则改写 → md2content.js 解析 → batch-screenshot.js `--dirs` 合并并发出图
+- **封面标题自适应排版**：智能断行（宽度单位模型，中文1/英文0.55，标点→助词→单词边界四级断点，英文单词不拆）+ 主/副标题最多两行迭代降字号 + 副标题固定比例跟随主标题（≈0.58）
+- **数据页网格自适应**：`STAT_GRID_COLS` 按统计项数量动态列数（4 项 → 2×2，消除 3+1 布局）
+- **头条套件规则按 2025-2026 平台规范校准**：正文 800-1500 字、AI 生成内容标识法规红线（《人工智能生成合成内容标识办法》）、标题党禁令、开头/结尾写法规则
+
+### Changed
+- `.gitignore`：rewriter 引擎 + 头条示例套件纳入开源，付费平台套件目录（wechat/zhihu/douyin 等）保持忽略
+- `batch-screenshot.js`：`--dirs` 简化式路径确定性推导（cwd=篇目目录、__dirname=snapflow 根）、报错追加工作目录指引
+
+---
+
 ## v1.2.5 (2026-08-08)
 
 ### Added
