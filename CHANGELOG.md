@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2.4 (2026-08-08)
+
+### Added
+- `style-pack-resolver.js`：新增独立风格包解析器。`--style-pack` 现支持**路径 / 文件名 / 名称**三种写法（如 `--style-pack 炭火` 自动匹配 `Snapflow-炭火.json`，无需记完整路径）
+- `batch-screenshot.js`：未指定 `--style-pack` 且为交互终端时，自动弹出风格包菜单（按使用频率排序，常用在前），选编号即可；非交互环境（如 CI/脚本）保持原行为用默认配置
+- 风格包使用频率记录于 `~/.config/opencode/style-pack-usage.json`（本地文件，不随仓库提交）
+
+---
+
 ## v1.2.3 (2026-08-07)
 
 ### Changed

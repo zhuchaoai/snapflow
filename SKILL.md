@@ -49,6 +49,7 @@ compatibility: opencode
 ③ 运行截图脚本（二选一）：
    ─ 有 Playwright Chromium: node batch-screenshot.js --style-pack xxx.json --config content.json
    ─ 用系统浏览器:       node batch-screenshot.js --channel msedge --style-pack xxx.json --config content.json
+   → --style-pack 支持路径/文件名/名称（如 "炭火"），不指定时交互终端弹菜单选择（按使用频率排序）
    → 自动：读模板 → 填变量 → 生成 HTML → 逐张截图
 ④ 检查结果
 ```

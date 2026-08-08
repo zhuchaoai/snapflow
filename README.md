@@ -131,6 +131,25 @@ node batch-screenshot.js --style-pack style-packs/xxx.json --config content.json
 node batch-screenshot.js --cfg config.yaml --config content.json
 ```
 
+`--style-pack` 支持**路径、文件名或名称**三种写法，无需记完整路径：
+
+```bash
+# 按文件名（自动匹配 style-packs/ 目录）
+node batch-screenshot.js --style-pack default --config content.json
+# 按风格包名称（短名即可，如 "炭火" 匹配 "Snapflow · 炭火"）
+node batch-screenshot.js --style-pack 炭火 --config content.json
+```
+
+**不指定 `--style-pack` 时**，在交互终端运行会弹出风格包菜单（按使用频率排序，常用在前），选编号即可：
+
+```
+📦 可用风格包（按使用频率排序）:
+  1. 出厂默认 · 浅色 ⭐ 🔥2次  (default.json)
+  2. Snapflow · 炭火 🔥1次  (Snapflow-炭火.json)
+
+请选择 (1-2) [默认 1]:
+```
+
 流程：读 content.json → 填充模板 → 生成 HTML → Playwright 截图
 
 #### direct 模式（修改后重截）
