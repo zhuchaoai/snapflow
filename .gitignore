@@ -43,8 +43,18 @@ templates/premium/
 # ─── 私有脚本（WSL 专属 ComfyUI 启动逻辑） ───
 generate-cover-bg.js
 
-# ─── 改写器（不开源，测试通过后大版本再发布） ───
-rewriter/
+# ─── 改写器：引擎 + 头条示例套件开源；付费平台套件（公众号/知乎等）不开源 ───
+rewriter/*
+!rewriter/rewrite.js
+!rewriter/slides-parser.js
+!rewriter/SKILL.md
+rewriter/platforms/*
+!rewriter/platforms/
+!rewriter/platforms/toutiao/
+rewriter/platforms/wechat/
+rewriter/platforms/zhihu/
+rewriter/platforms/douyin/
+rewriter/platforms/gongzhonghao/
 
 # ─── 系统文件 ───
 .DS_Store
