@@ -260,6 +260,75 @@ function buildBadgesHTML(badges) {
   return badges.map(b => `<span>${b}</span>`).join('\n      ');
 }
 
+/**
+ * 标题智能断行：优先在标点/助词后断，避免断在词中间（如"AI模/型""OpenC/ode"）。
+ * 宽度按字符模型估算（中文/全角=1，英文/数字/半角≈0.55），保证每段渲染宽度不超容量。
+ * 断点必须落在非字母数字字符之后（英文单词不拆断）；无标点/助词时回退到较靠前位置。
+ * maxUnits 由调用方按可用宽度与字号估算（单位=一个全角字符宽）。
+ */
+function smartBreakTitle(text, maxUnits) {
+  if (!text || text.includes('<br')) return text;
+  // 断点提示字符：标点优先，助词次之（"的""了"后断行最自然）
+  const puncts = ['，', '。', '！', '？', '、', '；', '：', '——', '…', ' ', '，'];
+  const particles = ['的', '了', '是', '在', '和', '与', '及', '把', '被', '让'];
+  const isWordChar = ch => /[A-Za-z0-9]/.test(ch);
+  // 字符宽度模型：全角≈1，半角/英文/数字≈0.55（CJK 字形近似方块）
+  const unitOf = ch => isWordChar(ch) || '.,;:!?()[]\'"'.includes(ch) ? 0.55 : 1;
+  const widthOf = s => [...s].reduce((sum, ch) => sum + unitOf(ch), 0);
+  // 单段即满足容量（含余量）→ 不拆
+  if (widthOf(text) <= maxUnits) return text;
+  const parts = [];
+  let rest = text;
+  while (widthOf(rest) > maxUnits) {
+    const minUnits = maxUnits * 0.3;
+    let cut = -1;
+    // 从后往前找断点：段宽不超 maxUnits 且尽量靠后（在标点/助词/单词边界处）
+    for (let i = rest.length - 1; i >= 1; i--) {
+      const seg = rest.slice(0, i);
+      const w = widthOf(seg);
+      if (w > maxUnits) continue;
+      if (w < minUnits) break;
+      const prev = rest[i - 1];
+      const next = rest[i] || '';
+      if (puncts.includes(prev) && !isWordChar(next)) { cut = i; break; }
+    }
+    if (cut === -1) {
+      for (let i = rest.length - 1; i >= 1; i--) {
+        const seg = rest.slice(0, i);
+        const w = widthOf(seg);
+        if (w > maxUnits) continue;
+        if (w < minUnits) break;
+        const prev = rest[i - 1];
+        const next = rest[i] || '';
+        if (particles.includes(prev) && !isWordChar(next)) { cut = i; break; }
+      }
+    }
+    if (cut === -1) {
+      // 无标点/助词：从后往前找单词边界（字母数字 ↔ 非字母数字转折）
+      for (let i = rest.length - 1; i >= 1; i--) {
+        const seg = rest.slice(0, i);
+        const w = widthOf(seg);
+        if (w > maxUnits) continue;
+        if (w < minUnits) break;
+        if (isWordChar(rest[i - 1]) !== isWordChar(rest[i])) { cut = i; break; }
+      }
+    }
+    if (cut === -1) {
+      // 兜底：取最接近 maxUnits 且不超宽的位置
+      let best = Math.floor(rest.length / 2);
+      for (let i = 1; i < rest.length; i++) {
+        if (widthOf(rest.slice(0, i)) > maxUnits) break;
+        best = i;
+      }
+      cut = Math.max(1, best);
+    }
+    parts.push(rest.slice(0, cut));
+    rest = rest.slice(cut).trimStart();
+  }
+  parts.push(rest);
+  return parts.join('<br>');
+}
+
 // logo 区上部装饰贴纸："⭐" 或 {"icon":"⭐","rotate":-12,"size":"64px"}
 function buildLogoDecorHTML(decors) {
   if (!decors || !decors.length) return '';
@@ -614,8 +683,35 @@ function injectTypography(vars, type, keys) {
 }
 
 function fillCoverVars(img, type, vars) {
-  vars.TITLE = img.title || '';
-  vars.SUBTITLE = img.subtitle || '';
+  // 主/副标题最多两行：按字符数与可用宽度反推字号（两行容量 ≥ 长度 → 字号），再按该字号断行
+  const availW = getCfgScreenshotWidth() - 180;
+  // 渲染余量：letter-spacing(1px/字) 与标点半角宽度使实际宽度 > 理论值，容量打 88% 折扣
+  const fitFactor = 0.88;
+  const baseTitleFs = parseFloat(SP?.typography?.cover?.title || '72') || 72;
+  const baseSubFs = parseFloat(SP?.typography?.cover?.subtitle || '40') || 40;
+  // 断行：从基准字号开始，若行数 >2 则降字号重断（每轮容量增大），直至两行内
+  const fitTitle = (fs) => {
+    const maxUnits = Math.max(6, Math.floor(availW * fitFactor / Math.max(24, fs)));
+    return smartBreakTitle(img.title || '', maxUnits);
+  };
+  const fitSub = (fs) => {
+    const maxUnits = Math.max(10, Math.floor(availW * fitFactor / Math.max(20, fs)));
+    return smartBreakTitle(img.subtitle || '', maxUnits);
+  };
+  let titleFs = baseTitleFs, titleText = fitTitle(titleFs);
+  while ((titleText.match(/<br>/g) || []).length + 1 > 2 && titleFs > 28) {
+    titleFs -= 4;
+    titleText = fitTitle(titleFs);
+  }
+  // 副标题基准字号 = 主标题最终字号 × 固定比例（风格包基准 44/76≈0.58），主降副必降，视觉层级恒定
+  const subRatio = baseSubFs / baseTitleFs;
+  let subFs = Math.round(titleFs * subRatio), subText = fitSub(subFs);
+  while ((subText.match(/<br>/g) || []).length + 1 > 2 && subFs > 20) {
+    subFs -= 4;
+    subText = fitSub(subFs);
+  }
+  vars.TITLE = titleText;
+  vars.SUBTITLE = subText;
   vars.PILL_NAME = img.pill || '';
   vars.TAGLINE = img.tagline || '';
   vars.BADGES = buildBadgesHTML(img.badges);
@@ -638,6 +734,9 @@ function fillCoverVars(img, type, vars) {
   vars.ACCENT_GRADIENT = tc.titleHl || 'linear-gradient(135deg, #2563eb, #60a5fa)';
   vars.COVER_ACCENT_COLOR = tc.accent || '#f5a623';
   injectTypography(vars, 'cover', ['title', 'subtitle', 'tagline', 'badge', 'brandBar', 'brandBadge', 'assetType']);
+  // 用反推字号覆盖（须在 injectTypography 之后），保证主/副标题最多两行不溢出
+  vars.TITLE_FS = titleFs + 'px';
+  vars.SUBTITLE_FS = subFs + 'px';
 }
 
 function fillContentVars(img, type, vars) {
@@ -736,6 +835,9 @@ function fillDataVars(img, type, vars) {
   vars.STAT_HIGHLIGHT_VALUE_COLOR = colors.statHighlightValueColor || getTypeColor(type, 'statHighlightValueColor');
   vars.STAT_LABEL_COLOR = colors.statLabelColor || getTypeColor(type, 'statLabelColor');
   vars.STAT_ITEMS_HTML = buildStatsHTML(img.stats);
+  // 网格列数随统计项数量自适应：2→2列 3→3列 4→2×2 5-6→3列（避免 4 个时 3+1 布局）
+  const n = (img.stats || []).length;
+  vars.STAT_GRID_COLS = n === 4 ? '1fr 1fr' : n <= 2 ? '1fr 1fr' : '1fr 1fr 1fr';
   const ha = getTypeColor(type, 'accent');
   vars.STAT_HIGHLIGHT_SHADOW = ha ? `0 4px 24px rgba(${hexToRgb(ha).join(',')},0.25)` : 'none';
   injectTypography(vars, type, ['pageNum', 'sectionTitle', 'statValue', 'statLabel']);
