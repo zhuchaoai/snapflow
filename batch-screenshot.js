@@ -1119,13 +1119,22 @@ async function runDirs(raw) {
   const pending = [];
 
   for (const spec of specs) {
-    const inDir = resolveRelPath(spec.inDir || `Distribute/${spec.name}/Images`);
-    const outDir = resolveRelPath(spec.outDir || spec.inDir || `Distribute/${spec.name}/Images`);
-    const stylePack = resolveRelPath(spec.stylePack || `rewriter/platforms/${spec.name}/style-pack.json`);
+    // 简化式（单段平台名）基于确定位置推导：Distribute 在篇目目录（cwd），风格包在 snapflow 根（__dirname）
+    // 显式式（四段）直接用给定路径；两者都经 resolveRelPath 兜底解析
+    const inDir = resolveRelPath(
+      spec.inDir || path.join(process.cwd(), 'Distribute', spec.name, 'Images')
+    );
+    const outDir = resolveRelPath(
+      spec.outDir || spec.inDir || path.join(process.cwd(), 'Distribute', spec.name, 'Images')
+    );
+    const stylePack = resolveRelPath(
+      spec.stylePack || path.join(__dirname, 'rewriter', 'platforms', spec.name, 'style-pack.json')
+    );
 
     if (!fs.existsSync(stylePack)) {
       console.error(`✗ 平台 ${spec.name} 风格包不存在: ${stylePack}`);
       console.error('  用法: --dirs "platform:inDir:outDir:stylePack,..." 或 --dirs "platform,..."（自动推导）');
+      console.error('  提示: 简化式 --dirs "toutiao" 需在篇目目录执行（含 Distribute/ 的那一层）');
       process.exit(1);
     }
     loadStylePack(stylePack);
@@ -1133,6 +1142,8 @@ async function runDirs(raw) {
     const configPath = path.join(inDir, 'content.json');
     if (!fs.existsSync(configPath)) {
       console.error(`✗ 平台 ${spec.name} 无 content.json: ${configPath}`);
+      console.error('  提示: 简化式 --dirs "toutiao" 需在篇目目录执行（含 Distribute/ 的那一层）');
+      console.error('        且已用 md2content.js 生成 Distribute/{平台}/Images/content.json');
       process.exit(1);
     }
     const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
