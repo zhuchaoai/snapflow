@@ -188,5 +188,36 @@
     "height": 1660,
     "maxShowcaseItems": 2,
     "headless": true
+  },
+  "writing": {
+    "guide_intro": "出厂默认风格包：中性浅色主题，开箱即用。适合体验完整截图功能，无付费风格包时也能跑通。",
+    "material_first": "素材先行（强制）：写稿前必须先完成素材检索——经历类素材查本地知识库（session-review 记录），事实类素材 Web 搜索（带来源）。输出素材清单（标注来源），用户只补 AI 查不到的私密经历，确认后才能写正文。AI 能做的事，用户坚决不自己做。非素材来源的细节须标 [存疑]",
+    "style_anchor": {
+      "open": "开头直接进场景，给画面感",
+      "detail": "数字是骨架，具体到可验证",
+      "turn": "转折有人物，有真实反应",
+      "punch": "金句带情绪，一句话立住",
+      "close": "收尾给行动，读者能照做"
+    },
+    "title": {
+      "max_chars": 20,
+      "emoji": false
+    },
+    "format": {
+      "max_chars": 800,
+      "plain_text": true
+    },
+    "emoji": {
+      "limit": 3,
+      "title_emoji": false
+    },
+    "ai_label": "🤖 AI 参与：文案生成 · 配图制作",
+    "comment": {
+      "formula": "[个人观点/经验] + [开放性问题]"
+    },
+    "redlines": [
+      "不虚构事实与数据：所有数字、案例、引用必须有源稿依据，不得编造",
+      "不夸大效果：不使用「绝对」「一定」「保证」等承诺性表述"
+    ]
   }
 }
