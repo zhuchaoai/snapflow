@@ -160,30 +160,19 @@ function loadStylePack(spPath) {
   }
 }
 
-// ─── Config 加载 ──────────────────────────────────────
-let CFG = null; // 全局配置对象，由 --cfg 加载
-
+// ─── Config 加载（已弃用）──────────────────────────────
+// config.yaml 已移除（2026-08），风格包是唯一配置源；--cfg 保留兼容但只警告
 function loadConfig(cfgPath) {
   if (!cfgPath) return;
-  const absPath = resolveRelPath(cfgPath);
-  if (!fs.existsSync(absPath)) {
-    console.warn(`  ⚠ config.yaml 不存在: ${absPath}，使用默认值`);
-    return;
-  }
-  try {
-    CFG = yaml.load(fs.readFileSync(absPath, 'utf-8'));
-    console.log(`  ✓ 已加载配置: ${absPath}`);
-  } catch (err) {
-    console.warn(`  ⚠ config.yaml 解析失败: ${err.message}，使用默认值`);
-  }
+  console.warn(`  ⚠ --cfg 已弃用（config.yaml 已移除），请改用 --style-pack 指定风格包`);
 }
 
-// 从风格包 > CFG > 默认值 获取配置（优先级从左到右）
+// 从风格包 > 默认值 获取配置（config.yaml 已移除，风格包是唯一配置源）
 function getCfgBrandName() {
-  return SP?.brand?.name || CFG?.brand?.name || 'Snapflow';
+  return SP?.brand?.name || 'Snapflow';
 }
 function getCfgPageBg() {
-  return SP?.colors?.pageBg || CFG?.colors?.page_bg || '#f0f4f8';
+  return SP?.colors?.pageBg || '#f0f4f8';
 }
 function getCfgBottomBarGradient(type) {
   // 返回纯颜色值（不含 linear-gradient 包装），包装在调用方统一处理
@@ -192,26 +181,24 @@ function getCfgBottomBarGradient(type) {
   const spBar = SP?.colors?.bottomBar;
   if (typeof spBar === 'object' && spBar[type]) return spBar[type];
   if (typeof spBar === 'string') return spBar;
-  const barColors = CFG?.colors?.bottom_bar;
-  if (barColors && barColors[type]) return barColors[type];
   return null;
 }
 function getCfgTemplateDir() {
-  return SP?.paths?.templateDir || CFG?.paths?.templates || null;
+  return SP?.paths?.templateDir || null;
 }
 function getCfgScreenshotWidth() {
-  return SP?.screenshot?.width || CFG?.screenshot?.width || 1242;
+  return SP?.screenshot?.width || 1242;
 }
 function getCfgScreenshotHeight() {
-  return SP?.screenshot?.height || CFG?.screenshot?.height || 1660;
+  return SP?.screenshot?.height || 1660;
 }
 function getCfgMaxShowcaseItems() {
-  return SP?.screenshot?.maxShowcaseItems || CFG?.screenshot?.max_showcase_items || 2;
+  return SP?.screenshot?.maxShowcaseItems || 2;
 }
 
 // ─── ComfyUI 封面底图配置 ────────────────────────────
 function getCfgCoverBg() {
-  return SP?.coverBg || CFG?.cover_bg || null;
+  return SP?.coverBg || null;
 }
 
 // 默认底部条渐变（按类型，无 CFG 时使用中性灰）
@@ -802,7 +789,7 @@ function fillCoverVars(img, type, vars) {
   vars.BG_IMAGE = img.bgImage
     ? `background-image: url('${img.bgImage}');`
     : `background: transparent;`;
-  vars.BRAND_BAR = SP?.brand?.tagline || CFG?.brand?.tagline || '内容自动化工作流';
+  vars.BRAND_BAR = SP?.brand?.tagline || '内容自动化工作流';
   const tc = SP?.colors?.types?.cover || {};
   vars.MAIN_TITLE_COLOR = tc.mainTitle || '#1e293b';
   vars.SUBTITLE_COLOR = tc.subtitle || '#334155';
@@ -1001,7 +988,7 @@ function generateHTML(config, articleDir, onlyFiles, outDirOverride) {
 
     // 公共变量（所有类型通用）
     vars.BRAND_NAME = getCfgBrandName();
-    vars.FONT_FAMILY = SP?.typography?.fontFamily || CFG?.typography?.font_family || '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
+    vars.FONT_FAMILY = SP?.typography?.fontFamily || '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
     vars.PAGE_BG = getCfgPageBg();
     const bottomBarGradient = getCfgBottomBarGradient(type);
     vars.BOTTOM_BAR_GRADIENT = bottomBarGradient
@@ -1416,10 +1403,8 @@ async function main() {
       loadStylePack(resolved.path);
       recordUsage(resolved.file);
     }
-  } else if (CFG?.style_pack) {
-    loadStylePack(CFG.style_pack);
-  } else if (process.stdin.isTTY) {
-    // 未指定且交互终端 → 弹菜单选择
+  } else {
+    // 未指定 → resolver 兜底：非 TTY 零等待选高频包 / 真终端弹菜单
     const picked = await resolveStylePack();
     if (picked) {
       loadStylePack(picked.path);

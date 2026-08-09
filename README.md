@@ -6,7 +6,7 @@
 # 配图 Demo：一键生成 6 张小红书风格 PNG
 npm install
 npx playwright install chromium
-node batch-screenshot.js --cfg config.yaml --config demo/content.json
+node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json
 ```
 
 ---
@@ -23,7 +23,7 @@ snapflow/
 │   └── default/            # 公开版（7 套 HTML，开箱即用）
 ├── style-packs/            # 风格包（JSON 配置）
 │   └── default.json        # 出厂默认（免费，开箱即用）
-├── config.yaml.example     # 配置示例
+├── style-pack-resolver.js  # 风格包解析器（未指定时自动选高频包）
 ├── content.json.example    # 内容数据模板（带注释）
 ├── SKILL.md                # 截图 Skill 入口
 ├── demo/                   # 可跑通示例
@@ -48,7 +48,7 @@ snapflow/
 ### 特性
 
 - **7 种布局模板** — 封面 / 卡片 / 展示 / 对比 / 文字 / 数据 / 流程
-- **配置驱动** — 改 `config.yaml` 换品牌名、配色、字号
+- **配置驱动** — 风格包单一配置源：换风格包 = 换品牌名、配色、字号
 - **批量截图** — 一次配置，一键出全部
 - **自动拆分** — 展示页超过 2 张截图自动分页
 - **两种模式** — template（新做配图）/ direct（修改后重截）
@@ -127,8 +127,8 @@ npm run demo
 ```bash
 # 使用风格包（推荐，所有配置单一来源）
 node batch-screenshot.js --style-pack style-packs/xxx.json --config content.json
-# 或通过 config.yaml 指定风格包（需先 cp config.yaml.example config.yaml）
-node batch-screenshot.js --cfg config.yaml --config content.json
+# 不指定风格包时自动选使用频率最高的（或弹菜单）
+node batch-screenshot.js --config content.json
 ```
 
 `--style-pack` 支持**路径、文件名或名称**三种写法，无需记完整路径：
@@ -164,12 +164,12 @@ node batch-screenshot.js --mode direct --dir ./Images
 
 ```bash
 # 可见浏览器，便于排查布局问题
-node batch-screenshot.js --cfg config.yaml --config content.json --headless false
+node batch-screenshot.js --style-pack style-packs/xxx.json --config content.json --headless false
 
 # 只处理指定文件
 node batch-screenshot.js --mode direct --dir ./Images --files "cover,painpoints"
 
-# 直接指定风格包（跳过 config.yaml）
+# 直接指定风格包（推荐，风格包是唯一配置源）
 node batch-screenshot.js --style-pack style-packs/xxx.json --config content.json --headless false
 
 # 使用系统已安装的 Edge 浏览器（国内网络免下载 Chromium）

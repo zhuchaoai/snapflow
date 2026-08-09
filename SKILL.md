@@ -31,7 +31,7 @@ compatibility: opencode
   - Playwright Chromium（`npx playwright install chromium`）— 推荐，自动下载
   - 系统已安装的 Chrome 或 Edge — 国内网络免下载，截图脚本加 `--channel msedge` 或 `--channel chrome`
 - 模板目录由风格包 `paths.templateDir` 指定（默认 `templates/default/`）
-- `config.yaml`（可选，用于注入品牌/配色，通过 `--cfg` 加载）
+- `style-pack-resolver.js` — 风格包解析器（--style-pack 支持路径/文件名/名称，未指定时自动选高频包）
 
 ---
 
@@ -318,8 +318,7 @@ AI 执行 `batch-screenshot.js` 即可，无需单独跑任何底图脚本。
 | `batch-screenshot.js` | 截图脚本（核心，必用） |
 | `generate-cover-bg.js` | ComfyUI封面底图生成（有条件依赖） |
 | `md2content.js` | 从稿件 slides 数据区生成 content.json |
-| `config.yaml` | 用户配置（品牌/配色/路径，已 gitignore） |
-| `config.yaml.example` | 配置模板 |
+| `style-pack-resolver.js` | 风格包解析器（未指定时自动选高频包） |
 | `content.json.example` | content.json 示例（带注释） |
 | `templates/default/` | 公开模板集（7 套 HTML） |
 | `demo/` | 可跑通示例 |
