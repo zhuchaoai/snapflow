@@ -318,7 +318,15 @@ function smartBreakTitle(text, maxUnits) {
       if (w < minUnits) break;
       const prev = rest[i - 1];
       const next = rest[i] || '';
-      if (puncts.includes(prev) && !isWordChar(next)) { cut = i; break; }
+      if (!puncts.includes(prev)) continue;
+      if (prev === ' ') {
+        // 空格断点：空格前是字母/数字（如 "136 行"）→ 数字量词连读，不拆
+        if (isWordChar(rest[i - 2] || '')) continue;
+        cut = i;
+        break;
+      }
+      // 非空格标点断点：后接英文也允许（"行 AI" 处可断）
+      if (puncts.includes(prev)) { cut = i; break; }
     }
     if (cut === -1) {
       for (let i = rest.length - 1; i >= 1; i--) {
