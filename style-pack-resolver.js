@@ -93,8 +93,9 @@ function matchByName(packs, query) {
 }
 
 // 交互菜单选择（主平台风格包 / 副平台风格包分组显示）
-// 任何环境都尝试弹菜单；带超时（默认 15s），超时/无输入 → 自动选使用频率最高的包
-async function pickInteractive(packs, timeoutMs = 15000) {
+// 任何环境都打印菜单；短超时（默认 3s，兼容人直接跑终端），超时/无输入 → 自动选使用频率最高的包。
+// opencode 环境下 agent 无法向子进程输入，交互由 agent 层询问机制完成，脚本只做兜底。
+async function pickInteractive(packs, timeoutMs = 3000) {
   const usage = loadUsage();
   const sorted = sortByUsage(packs);
   const groups = [
