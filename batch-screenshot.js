@@ -78,7 +78,15 @@ function resolveTemplateDir() {
   if (CLI_TEMPLATE_DIR) dir = resolveRelPath(CLI_TEMPLATE_DIR);
   else {
     const cfgDir = getCfgTemplateDir();
-    if (cfgDir) dir = resolveRelPath(cfgDir);
+    if (cfgDir) {
+      // 自包含文件夹结构：优先解析包内模板（SP_PROJECT_ROOT 指向包文件夹）
+      const inPack = SP_PROJECT_ROOT ? path.resolve(SP_PROJECT_ROOT, cfgDir) : null;
+      if (inPack && fs.existsSync(inPack)) {
+        dir = inPack;
+      } else {
+        dir = resolveRelPath(cfgDir);
+      }
+    }
   }
   if (dir && fs.existsSync(dir)) return dir;
   if (dir) console.warn(`  ⚠ 模板目录不存在: ${dir}，使用默认模板`);
@@ -153,7 +161,12 @@ function loadStylePack(spPath) {
   }
   try {
     SP = JSON.parse(fs.readFileSync(absPath, 'utf-8'));
-    SP_PROJECT_ROOT = path.resolve(path.dirname(absPath), '..');
+    // 自包含文件夹结构（{包名}/style-pack.json）→ 根指向包文件夹，包内 templates/ 等相对包解析；
+    // 平铺结构（{包名}.json）→ 根指向 style-packs/ 上级
+    const isFolderPack = path.basename(absPath) === 'style-pack.json';
+    SP_PROJECT_ROOT = isFolderPack
+      ? path.dirname(absPath)
+      : path.resolve(path.dirname(absPath), '..');
     console.log(`  ✓ 已加载风格包: ${path.basename(spPath)}`);
   } catch (err) {
     console.warn(`  ⚠ 风格包解析失败: ${err.message}，使用默认配置`);

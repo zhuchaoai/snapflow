@@ -16,24 +16,41 @@ const STYLE_PACKS_DIR = path.resolve(__dirname, 'style-packs');
 const PLATFORMS_DIR = path.resolve(__dirname, 'rewriter', 'platforms');
 const USAGE_FILE = path.join(os.homedir(), '.config', 'opencode', 'style-pack-usage.json');
 
-// 扫描主目录 style-packs/*.json + 副平台 rewriter/platforms/*/style-pack.json
-// 返回 [{file, path, name, group}]，file 含相对路径前缀避免重名（如 toutiao/style-pack.json）
+// 扫描主目录 style-packs/（兼容两种结构：平铺 *.json 或 自包含文件夹 */style-pack.json）
+// + 副平台 rewriter/platforms/*/style-pack.json
+// 返回 [{file, path, name, group}]，file 含相对路径前缀避免重名
 function listStylePacks() {
   const packs = [];
 
   if (fs.existsSync(STYLE_PACKS_DIR)) {
-    for (const f of fs.readdirSync(STYLE_PACKS_DIR)) {
-      if (!f.endsWith('.json')) continue;
-      const abs = path.join(STYLE_PACKS_DIR, f);
-      try {
-        const pack = JSON.parse(fs.readFileSync(abs, 'utf-8'));
-        packs.push({
-          file: f,
-          path: abs,
-          name: pack.pack?.name || f.replace(/\.json$/, ''),
-          group: 'main',
-        });
-      } catch { /* 解析失败跳过 */ }
+    for (const entry of fs.readdirSync(STYLE_PACKS_DIR)) {
+      const abs = path.join(STYLE_PACKS_DIR, entry);
+      // ① 自包含文件夹：{name}/style-pack.json（新结构，包 = 文件夹，含模板/README）
+      const folderPack = path.join(abs, 'style-pack.json');
+      if (fs.statSync(abs).isDirectory() && fs.existsSync(folderPack)) {
+        try {
+          const pack = JSON.parse(fs.readFileSync(folderPack, 'utf-8'));
+          packs.push({
+            file: path.join(entry, 'style-pack.json'),
+            path: folderPack,
+            name: pack.pack?.name || entry,
+            group: 'main',
+          });
+        } catch { /* 解析失败跳过 */ }
+        continue;
+      }
+      // ② 平铺 JSON（旧结构兼容）
+      if (entry.endsWith('.json')) {
+        try {
+          const pack = JSON.parse(fs.readFileSync(abs, 'utf-8'));
+          packs.push({
+            file: entry,
+            path: abs,
+            name: pack.pack?.name || entry.replace(/\.json$/, ''),
+            group: 'main',
+          });
+        } catch { /* 解析失败跳过 */ }
+      }
     }
   }
 
