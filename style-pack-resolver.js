@@ -93,9 +93,9 @@ function matchByName(packs, query) {
 }
 
 // 交互菜单选择（主平台风格包 / 副平台风格包分组显示）
-// 任何环境都打印菜单；短超时（默认 3s，兼容人直接跑终端），超时/无输入 → 自动选使用频率最高的包。
-// opencode 环境下 agent 无法向子进程输入，交互由 agent 层询问机制完成，脚本只做兜底。
-async function pickInteractive(packs, timeoutMs = 3000) {
+// 真终端（人直接跑）：正常等输入，15s 超时自动选高频包。
+// 非终端（agent 调用，主流场景）：agent 无法向子进程 stdin 输入，打印菜单后立即 fallback 高频包，零等待。
+async function pickInteractive(packs) {
   const usage = loadUsage();
   const sorted = sortByUsage(packs);
   const groups = [
@@ -117,6 +117,14 @@ async function pickInteractive(packs, timeoutMs = 3000) {
   }
 
   const fallback = sorted[0];
+
+  // 非交互环境（agent 调用）→ 打印菜单后立即 fallback，零等待
+  if (!process.stdin.isTTY) {
+    console.log(`\n  → 非交互环境，自动使用高频包: ${fallback.name}`);
+    return fallback;
+  }
+
+  const timeoutMs = 15000;
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   return new Promise(resolve => {
@@ -127,11 +135,6 @@ async function pickInteractive(packs, timeoutMs = 3000) {
       try { rl.close(); } catch {}
       resolve(pick);
     };
-
-    // 非交互环境（stdin 已关闭/管道无输入）→ 立即 fallback，不卡住
-    rl.on('close', () => {
-      if (!settled) done(fallback);
-    });
 
     // 超时 → fallback 高频包
     const timer = setTimeout(() => {
