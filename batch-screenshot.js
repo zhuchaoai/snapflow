@@ -450,8 +450,8 @@ async function ensureComfyUI(coverBg) {
     // 用 exec 启动持久进程，不等待退出（ComfyUI 不会自己退出）
     const proc = exec(coverBg.startCmd, { windowsHide: true });
     proc.unref();
-    // 等待就绪：15s→10s→10s，适应不同配置机器
-    const waits = [15000, 10000, 10000];
+    // 等待就绪：20s→25s→25s（开机后首次启动 ComfyUI 很慢，原 10s 轮询不够）
+    const waits = [20000, 25000, 25000];
     for (let i = 0; i < waits.length; i++) {
       await sleep(waits[i]);
       try {
