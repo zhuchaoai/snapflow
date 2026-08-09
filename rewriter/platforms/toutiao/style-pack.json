@@ -131,7 +131,8 @@
       "badge": "26px",
       "brandBar": "24px",
       "brandBadge": "24px",
-      "assetType": "26px"
+      "assetType": "26px",
+      "autoFit": true
     },
     "content": {
       "pageNum": "32px",
