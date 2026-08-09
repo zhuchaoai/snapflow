@@ -12,6 +12,7 @@
 ### Changed
 - `.gitignore`：rewriter 引擎 + 头条示例套件纳入开源，付费平台套件目录（wechat/zhihu/douyin 等）保持忽略
 - `batch-screenshot.js`：`--dirs` 简化式路径确定性推导（cwd=篇目目录、__dirname=snapflow 根）、报错追加工作目录指引
+- 写稿流程「素材先行」升级：AI 写稿前自主检索素材（经历类查本地知识库 session-review 记录、事实类 Web 搜索带来源），输出素材清单经用户确认后才动笔——用户只补 AI 查不到的私密经历，**AI 能做的事，用户坚决不自己做**
 
 ---
 
