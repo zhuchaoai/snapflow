@@ -32,9 +32,10 @@ AGENTS.md
 # ─── 付费内容（不进 git） ───
 dist/
 docs/
-style-packs/*.json
+style-packs/*
 !style-packs/.gitkeep
-!style-packs/default.json
+!style-packs/default/
+style-packs/*.json
 
 # ─── 私有模板（本地 git 管理，pre-push 拦截不上 GitHub） ───
 templates/private/
