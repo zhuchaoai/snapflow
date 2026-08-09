@@ -72,7 +72,8 @@ function resolveRelPath(relPath) {
 
 // ─── 模板目录 ──────────────────────────────────────────
 const CLI_TEMPLATE_DIR = getArg('--template-dir', null);
-const DEFAULT_TEMPLATE_DIR = resolveRelPath('templates/default');
+// 模板已随 default 风格包移动（自包含结构），fallback 指向包内模板
+const DEFAULT_TEMPLATE_DIR = resolveRelPath('style-packs/default/templates');
 function resolveTemplateDir() {
   let dir = null;
   if (CLI_TEMPLATE_DIR) dir = resolveRelPath(CLI_TEMPLATE_DIR);
