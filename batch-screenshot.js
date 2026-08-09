@@ -716,17 +716,24 @@ function fillCoverVars(img, type, vars) {
     const maxUnits = Math.max(10, Math.floor(availW * fitFactor / Math.max(20, fs)));
     return smartBreakTitle(subRaw, maxUnits);
   };
+  // 自适应降字号仅当风格包 typography.cover.autoFit=true（头条 30 字标题需要）；
+  // 小红书 20 字标题断点换行 2 行内，保持基准字号（默认 false 不降）
+  const autoFit = SP?.typography?.cover?.autoFit === true;
   let titleFs = baseTitleFs, titleText = fitTitle(titleFs);
-  while ((titleText.match(/<br>/g) || []).length + 1 > 2 && titleFs > 28) {
-    titleFs -= 4;
-    titleText = fitTitle(titleFs);
-  }
-  // 副标题基准字号 = 主标题最终字号 × 固定比例（风格包基准 44/76≈0.58），主降副必降，视觉层级恒定
-  const subRatio = baseSubFs / baseTitleFs;
-  let subFs = Math.round(titleFs * subRatio), subText = fitSub(subFs);
-  while ((subText.match(/<br>/g) || []).length + 1 > 2 && subFs > 20) {
-    subFs -= 4;
+  let subFs = baseSubFs, subText = fitSub(subFs);
+  if (autoFit) {
+    while ((titleText.match(/<br>/g) || []).length + 1 > 2 && titleFs > 28) {
+      titleFs -= 4;
+      titleText = fitTitle(titleFs);
+    }
+    // 副标题基准字号 = 主标题最终字号 × 固定比例（风格包基准 44/76≈0.58），主降副必降，视觉层级恒定
+    const subRatio = baseSubFs / baseTitleFs;
+    subFs = Math.round(titleFs * subRatio);
     subText = fitSub(subFs);
+    while ((subText.match(/<br>/g) || []).length + 1 > 2 && subFs > 20) {
+      subFs -= 4;
+      subText = fitSub(subFs);
+    }
   }
   vars.TITLE = titleText;
   vars.SUBTITLE = subText;
