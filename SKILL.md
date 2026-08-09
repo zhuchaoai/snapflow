@@ -50,7 +50,7 @@ compatibility: opencode
    ─ 有 Playwright Chromium: node batch-screenshot.js --style-pack xxx.json --config content.json
    ─ 用系统浏览器:       node batch-screenshot.js --channel msedge --style-pack xxx.json --config content.json
    → --style-pack 支持路径/文件名/名称（如 "炭火"）
-   → **未指定风格包时（agent 执行场景）**：agent 先用询问机制问用户选哪个风格包，用户确认后显式传 --style-pack；脚本层兜底——未指定则打印菜单、3s 超时自动选使用频率最高的包
+   → **未指定风格包时（agent 执行场景）**：agent 先用询问机制问用户选哪个风格包，用户确认后显式传 --style-pack；脚本层兜底——未指定则打印菜单、非交互环境零等待自动选使用频率最高的包（真终端 15s 超时）
    → 自动：读模板 → 填变量 → 生成 HTML → 逐张截图
 ④ 检查结果
 ```
