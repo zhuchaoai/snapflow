@@ -93,7 +93,8 @@ function matchByName(packs, query) {
 }
 
 // 交互菜单选择（主平台风格包 / 副平台风格包分组显示）
-async function pickInteractive(packs) {
+// 任何环境都尝试弹菜单；带超时（默认 15s），超时/无输入 → 自动选使用频率最高的包
+async function pickInteractive(packs, timeoutMs = 15000) {
   const usage = loadUsage();
   const sorted = sortByUsage(packs);
   const groups = [
@@ -114,13 +115,34 @@ async function pickInteractive(packs) {
     }
   }
 
+  const fallback = sorted[0];
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
   return new Promise(resolve => {
-    rl.question(`\n请选择 (1-${sorted.length}) [默认 1]: `, answer => {
-      rl.close();
+    let settled = false;
+    const done = (pick) => {
+      if (settled) return;
+      settled = true;
+      try { rl.close(); } catch {}
+      resolve(pick);
+    };
+
+    // 非交互环境（stdin 已关闭/管道无输入）→ 立即 fallback，不卡住
+    rl.on('close', () => {
+      if (!settled) done(fallback);
+    });
+
+    // 超时 → fallback 高频包
+    const timer = setTimeout(() => {
+      console.log(`\n  ⏱ ${timeoutMs / 1000}s 未选择，自动使用高频包: ${fallback.name}`);
+      done(fallback);
+    }, timeoutMs);
+
+    rl.question(`\n请选择 (1-${sorted.length}) [默认 1，${timeoutMs / 1000}s 超时自动选高频]: `, answer => {
+      clearTimeout(timer);
       const idx = parseInt(answer.trim(), 10) - 1;
       const pick = Number.isNaN(idx) ? 0 : idx;
-      resolve(sorted[Math.min(Math.max(pick, 0), sorted.length - 1)]);
+      done(sorted[Math.min(Math.max(pick, 0), sorted.length - 1)]);
     });
   });
 }
@@ -146,9 +168,8 @@ async function resolveStylePack(specified) {
     process.exit(1);
   }
 
-  // ③ 未指定 → 交互选择（非 TTY 环境直接返回 null，由调用方兜底）
+  // ③ 未指定 → 交互选择（任何环境都弹菜单，超时/无输入自动选高频包）
   if (packs.length === 0) return null;
-  if (!process.stdin.isTTY) return null;
   return await pickInteractive(packs);
 }
 
