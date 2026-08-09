@@ -261,6 +261,18 @@ function buildBadgesHTML(badges) {
 }
 
 /**
+ * 封面标点清洗（兜底）：title/subtitle/tagline 禁止标点（，。！？：；、——），
+ * 残留标点替换为空格。保留 <em> 高亮标签，只清洗文本内容。
+ */
+function cleanCoverPunct(text) {
+  if (!text) return text;
+  return text.replace(/[，。！？：；、——…]/g, ' ')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/ ([,.;:!?])/g, '$1') // 保留英文标点（如 "EP.13"）
+    .trim();
+}
+
+/**
  * 标题智能断行：优先在标点/助词后断，避免断在词中间（如"AI模/型""OpenC/ode"）。
  * 宽度按字符模型估算（中文/全角=1，英文/数字/半角≈0.55），保证每段渲染宽度不超容量。
  * 断点必须落在非字母数字字符之后（英文单词不拆断）；无标点/助词时回退到较靠前位置。
@@ -275,6 +287,8 @@ function smartBreakTitle(text, maxUnits) {
   // 字符宽度模型：全角≈1，半角/英文/数字≈0.55（CJK 字形近似方块）
   const unitOf = ch => isWordChar(ch) || '.,;:!?()[]\'"'.includes(ch) ? 0.55 : 1;
   const widthOf = s => [...s].reduce((sum, ch) => sum + unitOf(ch), 0);
+  // 短标题（≤8 个全角宽）永不拆行：宁可用大字号，不拆成两行
+  if (widthOf(text) <= 8) return text;
   // 单段即满足容量（含余量）→ 不拆
   if (widthOf(text) <= maxUnits) return text;
   const parts = [];
@@ -689,14 +703,18 @@ function fillCoverVars(img, type, vars) {
   const fitFactor = 0.88;
   const baseTitleFs = parseFloat(SP?.typography?.cover?.title || '72') || 72;
   const baseSubFs = parseFloat(SP?.typography?.cover?.subtitle || '40') || 40;
+  // 封面标点清洗（铁律兜底）：先清洗再断行，避免标点影响宽度计算
+  const titleRaw = cleanCoverPunct(img.title || '');
+  const subRaw = cleanCoverPunct(img.subtitle || '');
+  const tagRaw = cleanCoverPunct(img.tagline || '');
   // 断行：从基准字号开始，若行数 >2 则降字号重断（每轮容量增大），直至两行内
   const fitTitle = (fs) => {
     const maxUnits = Math.max(6, Math.floor(availW * fitFactor / Math.max(24, fs)));
-    return smartBreakTitle(img.title || '', maxUnits);
+    return smartBreakTitle(titleRaw, maxUnits);
   };
   const fitSub = (fs) => {
     const maxUnits = Math.max(10, Math.floor(availW * fitFactor / Math.max(20, fs)));
-    return smartBreakTitle(img.subtitle || '', maxUnits);
+    return smartBreakTitle(subRaw, maxUnits);
   };
   let titleFs = baseTitleFs, titleText = fitTitle(titleFs);
   while ((titleText.match(/<br>/g) || []).length + 1 > 2 && titleFs > 28) {
@@ -713,7 +731,7 @@ function fillCoverVars(img, type, vars) {
   vars.TITLE = titleText;
   vars.SUBTITLE = subText;
   vars.PILL_NAME = img.pill || '';
-  vars.TAGLINE = img.tagline || '';
+  vars.TAGLINE = tagRaw;
   vars.BADGES = buildBadgesHTML(img.badges);
   vars.LOGO_DECOR = buildLogoDecorHTML(img.logoDecor || []);
   vars.BG_IMAGE = img.bgImage
