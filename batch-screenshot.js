@@ -277,10 +277,22 @@ function cleanCoverPunct(text) {
  * 宽度按字符模型估算（中文/全角=1，英文/数字/半角≈0.55），保证每段渲染宽度不超容量。
  * 断点必须落在非字母数字字符之后（英文单词不拆断）；无标点/助词时回退到较靠前位置。
  * maxUnits 由调用方按可用宽度与字号估算（单位=一个全角字符宽）。
+ * 支持 <em> 高亮标签：文本与标签拆成 token，断行只作用在文本 token 上，绝不切进标签内部。
  */
 function smartBreakTitle(text, maxUnits) {
   if (!text || text.includes('<br')) return text;
-  // 断点提示字符：标点优先，助词次之（"的""了"后断行最自然）
+  // 拆 token：{tag: '<em>'} 或 {text: '文本'}，保持原文顺序
+  const tokens = [];
+  let lastIdx = 0;
+  for (const m of text.matchAll(/<[^>]+>/g)) {
+    if (m.index > lastIdx) tokens.push({ text: text.slice(lastIdx, m.index) });
+    tokens.push({ tag: m[0] });
+    lastIdx = m.index + m[0].length;
+  }
+  if (lastIdx < text.length) tokens.push({ text: text.slice(lastIdx) });
+
+  // 纯文本拼起来做宽度计算（标签不计宽）
+  const plain = tokens.filter(t => t.text !== undefined).map(t => t.text).join('');
   const puncts = ['，', '。', '！', '？', '、', '；', '：', '——', '…', ' ', '，'];
   const particles = ['的', '了', '是', '在', '和', '与', '及', '把', '被', '让'];
   const isWordChar = ch => /[A-Za-z0-9]/.test(ch);
@@ -288,11 +300,13 @@ function smartBreakTitle(text, maxUnits) {
   const unitOf = ch => isWordChar(ch) || '.,;:!?()[]\'"'.includes(ch) ? 0.55 : 1;
   const widthOf = s => [...s].reduce((sum, ch) => sum + unitOf(ch), 0);
   // 短标题（≤8 个全角宽）永不拆行：宁可用大字号，不拆成两行
-  if (widthOf(text) <= 8) return text;
+  if (widthOf(plain) <= 8) return text;
   // 单段即满足容量（含余量）→ 不拆
-  if (widthOf(text) <= maxUnits) return text;
+  if (widthOf(plain) <= maxUnits) return text;
+
+  // 在纯文本上计算断点（plain 中的字符位置）
   const parts = [];
-  let rest = text;
+  let rest = plain;
   while (widthOf(rest) > maxUnits) {
     const minUnits = maxUnits * 0.3;
     let cut = -1;
@@ -340,7 +354,41 @@ function smartBreakTitle(text, maxUnits) {
     rest = rest.slice(cut).trimStart();
   }
   parts.push(rest);
-  return parts.join('<br>');
+
+  // 把纯文本断点映射回 token 流：逐段消费 plain 文本，遇到断点插 <br>
+  // 断点若落在文本 token 开头（即 <em> 刚开启、尚未输出任何文本），
+  // 说明 <br> 会插进 <em> 内部——此时把 <br> 前移到该 <em> 之前，保持高亮完整
+  const out = [];
+  let partIdx = 0;
+  let partRemain = parts[0] ? parts[0].length : 0;
+  const flushBr = () => {
+    // 若输出末尾是 <em>（断点落在 em 开标签后、文本前），把 <br> 插到 <em> 前面
+    if (out[out.length - 1] === '<em>') {
+      out.splice(out.length - 1, 0, '<br>');
+    } else {
+      out.push('<br>');
+    }
+  };
+  for (const tok of tokens) {
+    if (tok.tag !== undefined) {
+      out.push(tok.tag);
+      continue;
+    }
+    const t = tok.text;
+    let i = 0;
+    while (i < t.length) {
+      if (partRemain === 0 && partIdx < parts.length - 1) {
+        partIdx++;
+        partRemain = parts[partIdx].length;
+        flushBr();
+      }
+      const take = Math.min(partRemain, t.length - i);
+      out.push(t.slice(i, i + take));
+      partRemain -= take;
+      i += take;
+    }
+  }
+  return out.join('');
 }
 
 // logo 区上部装饰贴纸："⭐" 或 {"icon":"⭐","rotate":-12,"size":"64px"}
