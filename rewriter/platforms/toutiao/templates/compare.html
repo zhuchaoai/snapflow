@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1024">
+<title>{{FILENAME}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1024px; height: 678px;
+  overflow: hidden;
+  font-family: {{FONT_FAMILY}};
+  background: {{PAGE_BG}};
+  display: flex; flex-direction: column;
+}
+body::before {
+  content: ''; position: absolute; inset: 0;
+  background: {{GRID_OVERLAY}};
+  pointer-events: none; z-index: 1;
+}
+body::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0;
+  width: 8px;
+  background: {{BOTTOM_BAR_GRADIENT}};
+  z-index: 2;
+}
+.wrapper {
+  position: relative; z-index: 3;
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 30px 90px;
+}
+.top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.page-num { font-size: {{PAGE_NUM_FS}}; font-weight: 700; color: {{PAGE_NUM_COLOR}}; letter-spacing: 2px; }
+.section-title { font-size: {{SECTION_TITLE_FS}}; font-weight: 700; color: {{SECTION_TITLE_COLOR}}; margin-bottom: 20px; letter-spacing: 1px; text-align: left; }
+.compare-grid { display: flex; gap: 16px; align-items: stretch; flex: 1; }
+.compare-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.col-header {
+  text-align: center; padding: 14px; border-radius: 6px; min-height: 60px;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.col-header.before { background: {{COMPARE_LEFT_HEADER_BG}}; border: 1px solid {{COMPARE_LEFT_HEADER_BORDER}}; }
+.col-header-label.before { font-size: {{HEADER_LABEL_FS}}; font-weight: 700; color: {{COMPARE_LEFT_HEADER_TEXT}}; }
+.col-header-sub.before { font-size: {{HEADER_SUB_FS}}; color: {{COMPARE_LEFT_HEADER_SUB}}; margin-top: 2px; }
+.col-item {
+  padding: 12px 16px; border-radius: 6px;
+  flex: 1; display: flex; flex-direction: column; justify-content: center;
+}
+.col-item.before { background: {{COMPARE_LEFT_CARD_BG}}; border-left: 3px solid {{COMPARE_LEFT_ACCENT}}; }
+.col-item.before .item-label { font-size: {{ITEM_LABEL_FS}}; color: {{COMPARE_LEFT_CARD_LABEL}}; margin-bottom: 2px; }
+.col-item.before .item-value { font-size: {{ITEM_VALUE_FS}}; font-weight: 600; color: {{COMPARE_LEFT_CARD_VALUE}}; }
+.col-header.after { background: {{COMPARE_RIGHT_HEADER_BG}}; border: 1px solid {{COMPARE_RIGHT_HEADER_BORDER}}; }
+.col-header-label.after { font-size: {{HEADER_LABEL_FS}}; font-weight: 700; color: {{COMPARE_RIGHT_HEADER_TEXT}}; }
+.col-header-sub.after { font-size: {{HEADER_SUB_FS}}; color: {{COMPARE_RIGHT_HEADER_SUB}}; margin-top: 2px; }
+.col-item.after { background: {{COMPARE_RIGHT_CARD_BG}}; border-left: 3px solid {{COMPARE_RIGHT_ACCENT}}; }
+.col-item.after .item-label { font-size: {{ITEM_LABEL_FS}}; color: {{COMPARE_RIGHT_CARD_LABEL}}; margin-bottom: 2px; }
+.col-item.after .item-value { font-size: {{ITEM_VALUE_FS}}; font-weight: 600; color: {{COMPARE_RIGHT_CARD_VALUE}}; }
+.vs-divider { display: flex; align-items: center; justify-content: center; width: 60px; flex-shrink: 0; }
+.vs-circle { width: 48px; height: 48px; border-radius: 50%; background: {{VS_BG}}; border: 2px solid {{VS_BORDER}}; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: {{VS_TEXT}}; box-shadow: 0 0 12px {{VS_BORDER}}4D; }
+.summary-box { margin-top: 16px; padding: 12px 20px; border-radius: 6px; border: 1px solid {{SUMMARY_BORDER}}; background: {{SUMMARY_BG}}; text-align: center; }
+.summary-text { font-size: {{SUMMARY_TEXT_FS}}; color: {{SUMMARY_TEXT}}; font-weight: 500; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="top-bar">
+    <div class="page-num">{{COMPARE_PAGE_NUM}}</div>
+  </div>
+  <div class="section-title">{{COMPARE_SECTION_TITLE}}</div>
+  <div class="compare-grid">
+    <div class="compare-col">
+      <div class="col-header before">
+        <div class="col-header-label before">{{COMPARE_LEFT_HEADER}}</div>
+        <div class="col-header-sub before">{{COMPARE_LEFT_SUB}}</div>
+      </div>
+      {{COMPARE_LEFT_ITEMS}}
+    </div>
+    <div class="vs-divider">
+      <div class="vs-circle">{{COMPARE_VS_TEXT}}</div>
+    </div>
+    <div class="compare-col">
+      <div class="col-header after">
+        <div class="col-header-label after">{{COMPARE_RIGHT_HEADER}}</div>
+        <div class="col-header-sub after">{{COMPARE_RIGHT_SUB}}</div>
+      </div>
+      {{COMPARE_RIGHT_ITEMS}}
+    </div>
+  </div>
+  <div class="summary-box">
+    <div class="summary-text">{{COMPARE_SUMMARY_TEXT}}</div>
+  </div>
+</div>
+</body>
+</html>

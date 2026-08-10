@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1024">
+<title>{{FILENAME}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1024px; height: 678px;
+  overflow: hidden;
+  font-family: {{FONT_FAMILY}};
+  background: {{PAGE_BG}};
+  display: flex; flex-direction: column;
+}
+/* 底图蒙版 */
+body::before {
+  content: ''; position: absolute; inset: 0;
+  {{BG_IMAGE}}
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  pointer-events: none; z-index: 1;
+}
+/* 左侧色条 — 资讯感标识 */
+body::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0;
+  width: 12px;
+  background: {{BOTTOM_BAR_GRADIENT}};
+  z-index: 2;
+}
+.wrapper {
+  position: relative; z-index: 3;
+  flex: 1; display: flex; flex-direction: column;
+  padding: 36px 90px 32px;
+}
+/* 品牌徽章 — 文档流顶部，不遮挡标题 */
+.brand-badge {
+  display: inline-flex; align-items: center; align-self: flex-start;
+  padding: 8px 20px; border-radius: 6px;
+  background: {{BRAND_BADGE_BG}};
+  font-size: 24px; font-weight: 600;
+  margin-bottom: 8px;
+}
+.brand-badge .name { color: {{BADGE_TEXT_COLOR}}; letter-spacing: 1px; }
+.content {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+.asset-type {
+  font-size: {{ASSET_TYPE_FS}}; color: {{ASSET_TYPE_COLOR}}; letter-spacing: 3px;
+  margin-bottom: 20px; font-weight: 600;
+}
+.main-title {
+  font-size: {{TITLE_FS}}; color: {{MAIN_TITLE_COLOR}}; font-weight: 800;
+  line-height: 1.25; text-align: left; letter-spacing: 1px;
+}
+.main-title .hl, .main-title em {
+  background: {{ACCENT_GRADIENT}};
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; font-style: normal;
+}
+.divider { width: 90px; height: 5px; background: {{DIVIDER_GRADIENT}}; margin: 28px 0; }
+.sub-title { font-size: {{SUBTITLE_FS}}; color: {{SUBTITLE_COLOR}}; font-weight: 600; letter-spacing: 1px; text-align: left; line-height: 1.4; }
+.sub-title .hl, .sub-title em { background: {{ACCENT_GRADIENT}}; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-style: normal; }
+.tagline { font-size: {{TAGLINE_FS}}; color: {{TAGLINE_COLOR}}; letter-spacing: 2px; text-align: left; margin-top: 18px; }
+.badges { display: flex; gap: 32px; margin-top: 32px; font-size: {{BADGE_FS}}; color: {{TAGLINE_COLOR}}; }
+/* 底部品牌条 — 文档流底部，不压标签 */
+.brand-bar {
+  font-size: {{BRAND_BAR_FS}}; color: {{BRAND_BAR_COLOR}};
+  letter-spacing: 4px; font-weight: 500;
+  margin-top: 18px;
+  padding-top: 14px;
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="brand-badge">
+    <span class="name">{{BRAND_NAME}}</span>
+  </div>
+  <div class="content">
+    <div class="main-title">{{TITLE}}</div>
+    <div class="divider"></div>
+    <div class="sub-title">{{SUBTITLE}}</div>
+    <div class="tagline">{{TAGLINE}}</div>
+    <div class="badges">{{BADGES}}</div>
+  </div>
+  <div class="brand-bar">─── {{BRAND_BAR}} ───</div>
+</div>
+</body>
+</html>

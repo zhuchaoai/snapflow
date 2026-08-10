@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1024">
+<title>{{FILENAME}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1024px; height: 678px;
+  overflow: hidden;
+  font-family: {{FONT_FAMILY}};
+  background: {{PAGE_BG}};
+  display: flex; flex-direction: column;
+}
+body::before {
+  content: ''; position: absolute; inset: 0;
+  background: {{GRID_OVERLAY}};
+  pointer-events: none; z-index: 1;
+}
+body::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0;
+  width: 8px;
+  background: {{BOTTOM_BAR_GRADIENT}};
+  z-index: 2;
+}
+.wrapper {
+  position: relative; z-index: 3;
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 40px 90px;
+}
+.page-num { font-size: {{PAGE_NUM_FS}}; color: {{PAGE_NUM_COLOR}}; font-weight: 600; margin-bottom: 12px; }
+.section-title { font-size: {{SECTION_TITLE_FS}}; color: {{SECTION_TITLE_COLOR}}; font-weight: 700; letter-spacing: 2px; margin-bottom: 32px; text-align: left; }
+.items { display: flex; gap: 20px; flex: 1; align-items: stretch; }
+.si-card {
+  flex: 1;
+  background: {{CARD_BG_COLOR}}; border: 1px solid {{CARD_BORDER_COLOR}};
+  border-radius: {{CARD_RADIUS_FS}}; padding: 32px 26px;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+}
+.si-img {
+  width: 72px; height: 72px; border-radius: 18px; margin-bottom: 18px;
+  background-size: cover; background-position: center;
+}
+.si-img.default-1 { background: {{ACCENT_LIGHT_GRADIENT}}; }
+.si-img.default-2 { background: {{ACCENT_LIGHT_GRADIENT}}; }
+.si-img.default-3 { background: {{ACCENT_LIGHT_GRADIENT}}; }
+.si-body { flex: 1; display: flex; flex-direction: column; }
+.si-title { font-size: {{CARD_TITLE_FS}}; font-weight: 600; color: {{CARD_TITLE_COLOR}}; }
+.si-desc { font-size: {{CARD_DESC_FS}}; color: {{CARD_DESC_COLOR}}; margin-top: 10px; line-height: 1.5; flex: 1; }
+.si-tag {
+  margin-top: 14px; padding: 6px 18px; border-radius: 20px;
+  font-size: 22px; color: {{ACCENT_COLOR}}; background: {{ACCENT_BG_HEX}}; font-weight: 500; display: inline-block;
+}
+.footer-text { font-size: 22px; color: {{FOOTER_COLOR}}; text-align: left; margin-top: 24px; padding-top: 14px; border-top: 1px solid {{FOOTER_BORDER_COLOR}}; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="page-num">{{PAGE_NUM}}</div>
+  <div class="section-title">{{SECTION_TITLE}}</div>
+  <div class="items">{{SHOWCASE_ITEMS_HTML}}</div>
+  <div class="footer-text">{{FOOTER_TEXT}}</div>
+</div>
+</body>
+</html>

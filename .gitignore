@@ -16,7 +16,8 @@ output/
 
 # ─── 临时 HTML（由脚本生成的中间文件） ───
 *.html
-!templates/default/*.html
+!style-packs/default/templates/*.html
+!rewriter/platforms/toutiao/templates/*.html
 
 # ─── 截图资产（demo 示范截图） ───
 # 如果想保留 demo 截图作为参考，注释下一行
@@ -35,11 +36,6 @@ docs/
 style-packs/*
 !style-packs/.gitkeep
 !style-packs/default/
-style-packs/*.json
-
-# ─── 私有模板（本地 git 管理，pre-push 拦截不上 GitHub） ───
-templates/private/
-templates/premium/
 
 # ─── 私有脚本（WSL 专属 ComfyUI 启动逻辑） ───
 generate-cover-bg.js

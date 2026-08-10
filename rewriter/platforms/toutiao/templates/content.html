@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1024">
+<title>{{FILENAME}}</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body {
+  width: 1024px; height: 678px;
+  overflow: hidden;
+  font-family: {{FONT_FAMILY}};
+  background: {{PAGE_BG}};
+  display: flex; flex-direction: column;
+}
+body::before {
+  content: ''; position: absolute; inset: 0;
+  background: {{GRID_OVERLAY}};
+  pointer-events: none; z-index: 1;
+}
+body::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 0;
+  width: 8px;
+  background: {{BOTTOM_BAR_GRADIENT}};
+  z-index: 2;
+}
+.wrapper {
+  position: relative; z-index: 3;
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center;
+  padding: 40px 90px;
+}
+.page-num { font-size: {{PAGE_NUM_FS}}; color: {{PAGE_NUM_COLOR}}; font-weight: 600; margin-bottom: 12px; }
+.section-title { font-size: {{SECTION_TITLE_FS}}; color: {{SECTION_TITLE_COLOR}}; font-weight: 700; letter-spacing: 2px; margin-bottom: 28px; text-align: left; }
+.card-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; align-items: stretch; }
+.card {
+  flex: 1; min-width: 220px;
+  display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start;
+  border-radius: 6px; border: 1px solid {{CARD_BORDER_COLOR}}; background: {{CARD_BG_COLOR}};
+  padding: 28px 24px; text-align: left;
+}
+.c-icon { font-size: {{ICON_SIZE_FS}}; margin-bottom: 12px; }
+.c-title { font-size: {{CARD_TITLE_FS}}; color: {{CARD_TITLE_COLOR}}; font-weight: 600; margin-bottom: 8px; }
+.c-desc { font-size: {{CARD_DESC_FS}}; color: {{CARD_DESC_COLOR}}; line-height: 1.5; }
+.footer-text { font-size: 22px; color: {{FOOTER_COLOR}}; text-align: left; margin-top: 24px; padding-top: 14px; border-top: 1px solid {{FOOTER_BORDER_COLOR}}; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="page-num">{{PAGE_NUM}}</div>
+  <div class="section-title">{{SECTION_TITLE}}</div>
+  <div class="card-grid">{{CARDS_HTML}}</div>
+  <div class="footer-text">{{FOOTER_TEXT}}</div>
+</div>
+</body>
+</html>
