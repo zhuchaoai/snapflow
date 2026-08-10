@@ -6,7 +6,7 @@
 # 配图 Demo：一键生成 6 张小红书风格 PNG
 npm install
 npx playwright install chromium
-node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json
+node batch-screenshot.js --style-pack default --config demo/content.json
 ```
 
 ---
@@ -173,10 +173,10 @@ node batch-screenshot.js --mode direct --dir ./Images --files "cover,painpoints"
 node batch-screenshot.js --style-pack style-packs/xxx.json --config content.json --headless false
 
 # 使用系统已安装的 Edge 浏览器（国内网络免下载 Chromium）
-node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --channel msedge
+node batch-screenshot.js --style-pack default --config demo/content.json --channel msedge
 
 # 使用系统已安装的 Chrome 浏览器
-node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --channel chrome
+node batch-screenshot.js --style-pack default --config demo/content.json --channel chrome
 ```
 
 ## 安装（给 AI agent 使用）

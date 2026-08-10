@@ -102,11 +102,13 @@ function sortByUsage(packs) {
 }
 
 // 按名称/文件名匹配（支持不带 .json 后缀、文件夹包前缀、短名如 "炭火" 匹配 "Snapflow · 炭火"）
+// 路径统一正斜杠比较，兼容 Windows 反斜杠（path.join 生成 default\style-pack.json）
 function matchByName(packs, query) {
   const q = query.replace(/\.json$/, '').trim();
-  return packs.find(p =>
-    p.file === q + '.json' || p.file === q || p.file.startsWith(q + '/') || p.name === q || p.name.includes(q)
-  ) || null;
+  return packs.find(p => {
+    const f = p.file.replace(/\\/g, '/');
+    return f === q + '.json' || f === q || f.startsWith(q + '/') || p.name === q || p.name.includes(q);
+  }) || null;
 }
 
 // 交互菜单选择（主平台风格包 / 副平台风格包分组显示）
