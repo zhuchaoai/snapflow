@@ -19,10 +19,11 @@ snapflow/
 ├── generate-cover-bg.js    # ComfyUI 封面底图生成
 ├── md2content.js           # 稿件 slides → content.json
 ├── LICENSE                 # MIT 开源许可
-├── templates/              # 模板集
-│   └── default/            # 公开版（7 套 HTML，开箱即用）
-├── style-packs/            # 风格包（JSON 配置）
-│   └── default.json        # 出厂默认（免费，开箱即用）
+├── style-packs/            # 风格包（自包含文件夹 = 一个包）
+│   └── default/            # 出厂默认（免费，开箱即用）
+│       ├── style-pack.json # 风格包主文件（配色/字号/写稿规则）
+│       ├── templates/      # 该包专属模板
+│       └── assets/         # 素材
 ├── style-pack-resolver.js  # 风格包解析器（未指定时自动选高频包）
 ├── content.json.example    # 内容数据模板（带注释）
 ├── SKILL.md                # 截图 Skill 入口
@@ -31,7 +32,6 @@ snapflow/
 ├── writing/                # ← 写稿引擎
 │   ├── SKILL.md            # 写稿 Skill 入口
 │   ├── manuscript-template.md  # 稿子格式模板（含 Slides 数据区完整写法）
-│   ├── config.yaml.example
 │   └── workflows/
 │       ├── 02-write-draft.md
 │       └── 03-generate-images.md
@@ -40,6 +40,8 @@ snapflow/
 ```
 
 > **两个 Skill**：本项目包含独立的截图 skill 和写稿 skill。丢进 AI 平台 skill 目录后自动识别为两个可用 skill。截图引擎可独立运行，不依赖写稿 skill。
+>
+> **风格包 = 一个文件夹**：付费风格包（如炭火）是自包含文件夹（style-pack.json + templates + README），复制进 `style-packs/` 即用，无需任何配置。
 
 ---
 
@@ -140,14 +142,16 @@ node batch-screenshot.js --style-pack default --config content.json
 node batch-screenshot.js --style-pack 炭火 --config content.json
 ```
 
-**不指定 `--style-pack` 时**，在交互终端运行会弹出风格包菜单（按使用频率排序，常用在前），选编号即可：
+**不指定 `--style-pack` 时**：
+- 交互终端（人直接跑）：弹出风格包菜单（按使用频率排序），选编号即可
+- agent 调用（非交互）：自动选使用频率最高的风格包，零等待
 
 ```
-📦 可用风格包（按使用频率排序）:
-  1. 出厂默认 · 浅色 ⭐ 🔥2次  (default.json)
-  2. Snapflow · 炭火 🔥1次  (Snapflow-炭火.json)
+📦 可用风格包:
+  1. Snapflow · 炭火 ⭐ 🔥10次  (Snapflow-炭火/style-pack.json)
+  2. 出厂默认 · 浅色 🔥1次  (default/style-pack.json)
 
-请选择 (1-2) [默认 1]:
+请选择 (1-2) [默认 1，15s 超时自动选高频]:
 ```
 
 流程：读 content.json → 填充模板 → 生成 HTML → Playwright 截图
@@ -229,14 +233,20 @@ dir %USERPROFILE%\.config\opencode\skills\snapflow
 
 ## 风格包（付费）
 
-风格包是一个 JSON 文件，**所有配置的单一来源**：品牌、配色、截图参数、路径、ComfyUI 设置、写稿规则，一个文件到位。
-agent 加载风格包后直接工作，无需额外配置。
+风格包是**自包含文件夹**，**所有配置的单一来源**：品牌、配色、截图参数、模板、ComfyUI 设置、写稿规则，一个文件夹到位。复制进 `style-packs/` 即用，零配置。
 
-一个风格包 = 一个平台的完整视觉+内容方案。切换平台只需换风格包。
+一个风格包 = 一个平台的完整视觉+内容方案。切换平台只需换风格包文件夹。
 
-- 标价 **¥49.9**，上新优惠 **¥29.9**
+- 标价 **¥29.9**
 - 一次购买，持续更新
 - 购买入口：[面包多 · Snapflow 炭火风格包](https://mbd.pub/o/bread/YZaUlp5tZA==)
+
+### 为什么值这个价
+
+- **审美即产品**：炭火暗暖系视觉（配色/排版/字体）是打磨过的设计，不是模板堆砌
+- **一次劳动，重复收益**：你买的是设计成品 + 持续更新，不用自己花时间调
+- **写稿规则内置**：素材先行 + 风格锚 + 红线，AI 按你的调性写，不是通用模板腔
+- **持续迭代**：引擎更新、规则升级，风格包跟随更新（版本号可查）
 
 ## License
 
