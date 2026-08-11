@@ -297,8 +297,8 @@ function smartBreakTitle(text, maxUnits) {
   const puncts = ['，', '。', '！', '？', '、', '；', '：', '——', '…', ' ', '，'];
   const particles = ['的', '了', '是', '在', '和', '与', '及', '把', '被', '让'];
   const isWordChar = ch => /[A-Za-z0-9]/.test(ch);
-  // 字符宽度模型：中文/全角≈0.87（实测 108px 字号中文渲染宽约 94px），半角/英文/数字≈0.48
-  const unitOf = ch => isWordChar(ch) || '.,;:!?()[]\'"'.includes(ch) ? 0.48 : 0.87;
+  // 字符宽度模型：中文/全角≈1.02（实测 font-weight 700 + letter-spacing 2px 下每字 110px @ 108px 字号），半角/英文/数字≈0.56
+  const unitOf = ch => isWordChar(ch) || '.,;:!?()[]\'"'.includes(ch) ? 0.56 : 1.02;
   const widthOf = s => [...s].reduce((sum, ch) => sum + unitOf(ch), 0);
   // 短标题（≤8 个全角宽）永不拆行：宁可用大字号，不拆成两行
   if (widthOf(plain) <= 8) return text;
@@ -756,9 +756,10 @@ function injectTypography(vars, type, keys) {
 function fillCoverVars(img, type, vars) {
   // 主/副标题最多两行：按字符数与可用宽度反推字号（两行容量 ≥ 长度 → 字号），再按该字号断行
   // 模板实测：标题容器 = 页面宽 × 90%（private/cover.html .main-title-container width:90%），
-  // 中文渲染宽度 ≈ 0.87×字号（非 1×），letter-spacing 2px 补偿后容量系数取 0.95
+  // 中文渲染宽度 ≈ 1.02×字号（font-weight 700 + letter-spacing 2px 实测每字 110px @ 108px），
+  // 容量系数 0.93 留安全余量（防字体差异导致末字折行）
   const availW = getCfgScreenshotWidth() * 0.9;
-  const fitFactor = 0.95;
+  const fitFactor = 0.93;
   const baseTitleFs = parseFloat(SP?.typography?.cover?.title || '72') || 72;
   const baseSubFs = parseFloat(SP?.typography?.cover?.subtitle || '40') || 40;
   // 封面标点清洗（铁律兜底）：先清洗再断行，避免标点影响宽度计算
@@ -766,13 +767,13 @@ function fillCoverVars(img, type, vars) {
   const subRaw = cleanCoverPunct(img.subtitle || '');
   const tagRaw = cleanCoverPunct(img.tagline || '');
   // 断行：从基准字号开始，若行数 >2 则降字号重断（每轮容量增大），直至两行内
-  // 容量换算：maxUnits(单位) = 容器px / (字号px × 0.87)，0.87 为中文实测渲染宽系数
+  // 容量换算：maxUnits(单位) = 容器px×系数 / (字号px × 1.02)，1.02 为中文渲染宽实测系数（含 letter-spacing）
   const fitTitle = (fs) => {
-    const maxUnits = Math.max(6, Math.floor(availW * fitFactor / (Math.max(24, fs) * 0.87)));
+    const maxUnits = Math.max(6, Math.floor(availW * fitFactor / (Math.max(24, fs) * 1.02)));
     return smartBreakTitle(titleRaw, maxUnits);
   };
   const fitSub = (fs) => {
-    const maxUnits = Math.max(10, Math.floor(availW * fitFactor / (Math.max(20, fs) * 0.87)));
+    const maxUnits = Math.max(10, Math.floor(availW * fitFactor / (Math.max(20, fs) * 1.02)));
     return smartBreakTitle(subRaw, maxUnits);
   };
   // 自适应降字号仅当风格包 typography.cover.autoFit=true（头条 30 字标题需要）；
