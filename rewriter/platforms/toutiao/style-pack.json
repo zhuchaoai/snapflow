@@ -125,11 +125,11 @@
   "typography": {
     "fontFamily": "-apple-system, \"PingFang SC\", \"Microsoft YaHei\", sans-serif",
     "cover": {
-      "title": "76px",
-      "subtitle": "44px",
-      "tagline": "28px",
-      "badge": "26px",
-      "brandBar": "24px",
+      "title": "68px",
+      "subtitle": "40px",
+      "tagline": "27px",
+      "badge": "25px",
+      "brandBar": "22px",
       "brandBadge": "24px",
       "assetType": "26px",
       "autoFit": true
@@ -166,8 +166,8 @@
     }
   },
   "screenshot": {
-    "width": 1024,
-    "height": 678,
+    "width": 1080,
+    "height": 608,
     "maxShowcaseItems": 2,
     "headless": true
   },
