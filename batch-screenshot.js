@@ -29,6 +29,8 @@ const os = require('os');
 const yaml = require('js-yaml');
 const { exec } = require('child_process');
 const { resolveStylePack, recordUsage } = require('./style-pack-resolver.js');
+const lifecycle = require('./comfy-lifecycle.js');
+const { ensureComfyScript } = require('./comfy-setup.js');
 
 // ─── 参数解析 ────────────────────────────────────────
 const args = process.argv.slice(2);
@@ -517,6 +519,7 @@ async function ensureComfyUI(coverBg) {
   } catch {}
   if (!coverBg.startCmd) { return false; }
   console.log('  → ComfyUI 未运行，启动中...');
+  ensureComfyScript();
   try {
     // 用 exec 启动持久进程，不等待退出（ComfyUI 不会自己退出）
     const proc = exec(coverBg.startCmd, { windowsHide: true });
@@ -530,6 +533,8 @@ async function ensureComfyUI(coverBg) {
         if (res.ok) {
           // 等 2 秒确保提交接口就绪，再返回 true
           await sleep(2000);
+          // 由脚本启动的实例 → 登记托管，看门狗才管理它的退出
+          lifecycle.markManaged({ url });
           return true;
         }
       } catch {}
@@ -663,6 +668,10 @@ async function generateCoverBackgrounds(config, articleDir) {
       console.log(`  ⚠ 底图文件拷贝失败，封面使用渐变背景兜底`);
     }
   }
+
+  // ComfyUI 使用结束：刷新最后使用时间 + 排程延迟退出（以最后一次调用结束为准）
+  lifecycle.touch();
+  lifecycle.schedule();
 }
 
 // ─── Showcase 自动拆分（单页最多 2 项，超出自动拆页） ──

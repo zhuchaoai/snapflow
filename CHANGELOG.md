@@ -1,5 +1,40 @@
 # Changelog
 
+## v2.0.2 (2026-08-20)
+
+### Added
+- **ComfyUI 智能脚本自动生成**（`comfy-setup.js`）：跨平台（Linux/macOS/Windows）首次运行自动检测环境并生成 `comfyui` 管理脚本
+  - `detect()`：平台 / ComfyUI 目录（`COMFYUI_DIR` > `~/ComfyUI` > `~/comfyui` > `/opt/ComfyUI`）/ python（`.venv` > `venv` > 系统 python）/ GPU
+  - `generate()`：按平台生成 start/stop/status 三合一脚本——Linux/macOS 生成 bash 版（`~/.local/bin/comfyui`），Windows 生成 PowerShell 版（`comfyui.ps1`）
+  - `ensureComfyScript()`：命令已存在 → 直接用（不覆盖、不检查）；不存在 → 检测 + 生成；检测失败 → 提示设置 `COMFYUI_DIR` / `COMFYUI_PYTHON`，不阻断调用方
+  - 手动模式：`node comfy-setup.js` 输出检测报告并生成
+
+### Changed
+- `batch-screenshot.js`：`ensureComfyUI` 执行 `startCmd` 前调用 `ensureComfyScript()`——首次运行无 `comfyui` 命令时自动生成
+- `comfy-lifecycle.js`：停止/强杀命令平台化——Windows 走 `comfyui.ps1` + `Stop-Process`，Linux/macOS 走 `comfyui stop` + `pkill`
+
+### Removed
+- **`generate-cover-bg.js` 删除**：功能已集成进 `batch-screenshot.js`（`generateCoverBackgrounds` 内置 ComfyUI 检测/启动/出图/拷贝），独立脚本冗余，从开源分发中移除
+
+---
+
+## v2.0.1 (2026-08-20)
+
+### Added
+- **ComfyUI 延迟退出机制**（`comfy-lifecycle.js`）：以最后一次脚本调用结束为准，闲置 30 分钟自动停止 ComfyUI，释放 GPU 显存
+  - `markManaged()`：仅在脚本真正启动 ComfyUI 时登记托管——用户手动启动的实例绝不被脚本杀掉
+  - `touch()`：每次调用结束刷新最后使用时间，看门狗轮询重读状态文件 → 新调用自动顺延，无需取消旧定时器
+  - `schedule()`：spawn 独立看门狗（detached + unref + pid 探活去重，最多 1 个存活）
+  - 看门狗：超时 → 队列忙则顺延 → 执行 `comfyui stop`（优雅）→ 强杀兜底 → 清理状态自退
+  - 状态文件 `~/.cache/snapflow/comfyui-lifecycle.json` 原子写（临时文件 + rename），多脚本并发安全
+  - `COMFYUI_IDLE_TIMEOUT_MS` / `COMFYUI_POLL_INTERVAL_MS` / `COMFYUI_STOP_CMD` 环境变量可调
+
+### Changed
+- `batch-screenshot.js`：`ensureComfyUI` 真正启动后登记托管；`generateCoverBackgrounds` 结束后刷新 + 排程延迟退出
+- `generate-cover-bg.js`：修复 Windows 残留——移除硬编码 `powershell.exe` 启动命令，改走风格包 `coverBg.startCmd`（Ubuntu 下为 `bash -lc 'comfyui start'`）；结束后刷新 + 排程延迟退出
+
+---
+
 ## v2.0.0 (2026-08-08)
 
 ### Added

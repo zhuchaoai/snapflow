@@ -314,8 +314,9 @@ AI 执行 `batch-screenshot.js` 即可，无需单独跑任何底图脚本。
 
 | 文件 | 说明 |
 |:----|:-----|
-| `batch-screenshot.js` | 截图脚本（核心，必用） |
-| `generate-cover-bg.js` | ComfyUI封面底图生成（有条件依赖） |
+| `batch-screenshot.js` | 截图脚本（核心，必用，内置 ComfyUI 封面底图生成） |
+| `comfy-setup.js` | ComfyUI 智能脚本自动生成（跨平台首次运行检测） |
+| `comfy-lifecycle.js` | ComfyUI 延迟退出管理（闲置 30min 自动停止） |
 | `md2content.js` | 从稿件 slides 数据区生成 content.json |
 | `style-pack-resolver.js` | 风格包解析器（未指定时自动选高频包） |
 | `content.json.example` | content.json 示例（带注释） |

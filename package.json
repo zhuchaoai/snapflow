@@ -1,6 +1,6 @@
 {
   "name": "snapflow",
-  "version": "1.0.0",
+  "version": "2.0.2",
   "description": "内容自动化工作流 — 写稿+配图一站式工具",
   "private": false,
   "license": "MIT",
@@ -13,10 +13,10 @@
     "template"
   ],
   "scripts": {
-    "demo": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json",
-    "demo:visible": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --headless false",
-    "demo:edge": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --channel msedge",
-    "demo:chrome": "node batch-screenshot.js --style-pack style-packs/default.json --config demo/content.json --channel chrome",
+    "demo": "node batch-screenshot.js --style-pack style-packs/default/style-pack.json --config demo/content.json",
+    "demo:visible": "node batch-screenshot.js --style-pack style-packs/default/style-pack.json --config demo/content.json --headless false",
+    "demo:edge": "node batch-screenshot.js --style-pack style-packs/default/style-pack.json --config demo/content.json --channel msedge",
+    "demo:chrome": "node batch-screenshot.js --style-pack style-packs/default/style-pack.json --config demo/content.json --channel chrome",
     "start": "node batch-screenshot.js"
   },
   "dependencies": {

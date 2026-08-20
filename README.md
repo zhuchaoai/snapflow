@@ -15,8 +15,9 @@ node batch-screenshot.js --style-pack default --config demo/content.json
 
 ```
 snapflow/
-├── batch-screenshot.js     # 截图脚本（核心） ← 截图引擎
-├── generate-cover-bg.js    # ComfyUI 封面底图生成
+├── batch-screenshot.js     # 截图脚本（核心） ← 截图引擎（内置 ComfyUI 封面底图生成）
+├── comfy-setup.js          # ComfyUI 智能脚本自动生成（跨平台首次运行检测）
+├── comfy-lifecycle.js      # ComfyUI 延迟退出管理（闲置 30min 自动停止）
 ├── md2content.js           # 稿件 slides → content.json
 ├── LICENSE                 # MIT 开源许可
 ├── style-packs/            # 风格包（自包含文件夹 = 一个包）

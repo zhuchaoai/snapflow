@@ -24,21 +24,11 @@ node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/x
 
 ### 3️⃣ 封面底图生成（按需）
 
-有两种方式，取决于你的环境：
+`batch-screenshot.js` **已内置 ComfyUI 支持**（第 4 步自动触发）。风格包里配了 `coverBg` 段就会自动：检查 ComfyUI 在线（未运行且有 `startCmd` 则自动启动）→ 从 slides bgPrompt 提交生成 → 轮询出图 → 拷贝到 Images/。
 
-**方式 A：ComfyUI + generate-cover-bg.js（WSL + Windows 混合环境）**
-适用场景：WSL 跑脚本、Windows 跑 ComfyUI。
+首次运行无 `comfyui` 命令时会自动检测环境并生成跨平台管理脚本（见 `comfy-setup.js`），用完后闲置 30 分钟自动停止释放显存（见 `comfy-lifecycle.js`）。
 
-```bash
-node generate-cover-bg.js --config "篇目/Images/content.json" --md "篇目/Manuscript/稿件.md" [--style-pack style-packs/xxx.json]
-```
-
-脚本自动：检查 ComfyUI 在线 → 从 slides bgPrompt 提交生成 → 轮询出图 → 拷贝到 Images/。
-
-**方式 B：batch-screenshot.js 内置集成（纯 Windows 环境）**
-`batch-screenshot.js` 已内置 ComfyUI 支持。风格包里配了 `coverBg` 段就会自动检测并调用。
-
-**无底图时**：两种方式都会跳过，封面使用渐变背景兜底。
+**无底图时**：不配 `coverBg` 或 ComfyUI 不可用，脚本自动跳过，封面使用渐变背景兜底。
 
 ### 4️⃣ 批量截图
 
