@@ -393,6 +393,12 @@ function smartBreakTitle(text, maxUnits) {
         partRemain = parts[partIdx].length;
         flushBr();
       }
+      // 保护：parts 已耗尽（最后一个 part 被消费完）时，剩余文本直接追加，
+      // 避免 take=0 死循环导致 Invalid array length
+      if (partRemain <= 0) {
+        out.push(t.slice(i));
+        break;
+      }
       const take = Math.min(partRemain, t.length - i);
       out.push(t.slice(i, i + take));
       partRemain -= take;
