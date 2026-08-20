@@ -65,9 +65,8 @@ node <snapflow>/rewriter/rewrite.js --platform toutiao --md "Manuscript/稿件.m
 > ⚠️ 关键（防结构漂移）：
 > - Slides 必须重新生成，不照搬源稿。头条号只 1-2 张，标题去 emoji、去 `<em>`
 > - **Slides 必须 YAML 格式**（`assetType:` + `- type:` 逐行），禁止 JSON 数组
-> - **严格复制 `_task.md` 里的【结构样板】骨架**（frontmatter 字段/`##` 小标题 2-4 个/AI 声明），只替换内容
+> - **严格复制 `_task.md` 里的【结构样板】骨架**（frontmatter 字段/`##` 小标题 2-4 个），只替换内容
 > - **正文 800-1500 字**（头条展开要求，原创≥300 字），开头场景化/问题式抓人
-> - **文末必须保留 AI 声明**（「本文由 AI 辅助生成，经作者原创加工优化」，《人工智能生成合成内容标识办法》2025-09-01 强制）
 
 ### STEP 3 — 生成 content.json（复用主项目脚本）
 

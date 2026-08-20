@@ -259,7 +259,6 @@ node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/x
 | 总结语 | 正文结论 | `compare.summaryText` |
 | 流程步骤 | 正文步骤描述 | `flow.steps[].title/desc` |
 | 步骤 footerText | 对应段落结论 | 所有非 cover 类型的 `footerText` |
-| AI 标识行 | 正文末尾 | 必须与风格包 `writing.ai_label` 完全一致 |
 | 评论区钩子 | 评论区区域 | 评论区文字（独立区域，不映射 Slides） |
 
 ### STEP 3 — 更新 Slides 数据
@@ -280,7 +279,6 @@ node md2content.js --md "篇目/Manuscript/稿件.md" --style-pack style-packs/x
 > - [cover] title/subtitle/tagline/badges ✅
 > - [content/data/text/compare/flow] 全字段已对齐 ✅
 > - footerText 全部与正文一致 ✅
-> - AI 标识行已校验 ✅
 > 
 > 现在跑 md2content + 截图？
 

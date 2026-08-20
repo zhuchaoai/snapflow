@@ -212,7 +212,6 @@ subtitle: <em>Windows</em> 用户的开发地狱
 
 1. **第一次通读修改**：从头到尾读一遍，找逻辑漏洞、语感别扭、结构问题，修改
 2. **第二次通读修改**：再读一遍，找上一轮漏掉的细节——用词精准度、前后一致性、slides数据区字段是否完整
-3. **AI 标识行核验**：对比正文中的 `🤖 AI 参与：...` 行是否与风格包 `writing.ai_label` 字段 **完全一致**。不一致则替换为风格包的值，不可擅自修改措辞
 
 **质量自检（风格包 quality 段）：**
 
@@ -258,7 +257,6 @@ subtitle: <em>Windows</em> 用户的开发地狱
 | 对比项 | 正文对比内容 | `compare.leftItems/rightItems` |
 | 总结语 | 正文结论 | `compare.summaryText` |
 | 流程步骤 | 正文步骤描述 | `flow.steps[].title/desc` |
-| AI 标识行 | 正文末尾 | 必须与风格包 `writing.ai_label` 完全一致 |
 | 评论区钩子 | 评论区区域 | 评论区文字（独立区域，不映射 Slides） |
 
 ### STEP 3 — 更新 Slides 数据
@@ -279,7 +277,6 @@ subtitle: <em>Windows</em> 用户的开发地狱
 > - [cover] title/subtitle/tagline/badges ✅
 > - [content/data/text/compare/flow] 全字段已对齐 ✅
 > - footerText 全部与正文一致 ✅
-> - AI 标识行已校验 ✅
 > 
 > 现在跑 md2content + 截图？
 

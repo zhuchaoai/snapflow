@@ -72,7 +72,7 @@ function buildRewriteInstruction(profile, source, exampleContent) {
     lines.push('## 结构骨架（硬约束，禁止漂移）');
     lines.push(`- ${f.note}`);
     if (exampleContent) {
-      lines.push('- 下面的【结构样板】是成稿示例：逐字段复制其骨架（frontmatter 字段/小标题结构/AI 声明/slides 结构），只替换内容');
+      lines.push('- 下面的【结构样板】是成稿示例：逐字段复制其骨架（frontmatter 字段/小标题结构/slides 结构），只替换内容');
     } else if (f.exampleFile) {
       lines.push(`- 先读同目录的 \`${f.exampleFile}\`，逐字段复制其结构骨架，只替换内容`);
     }
@@ -84,9 +84,6 @@ function buildRewriteInstruction(profile, source, exampleContent) {
     }
     if (f.subsectionCount) {
       lines.push(`- 小标题数量：${f.subsectionCount.min}-${f.subsectionCount.max} 个（${f.subsectionNote}）`);
-    }
-    if (f.requireAIDeclaration) {
-      lines.push(`- 文末必须保留『AI 参与：…』声明行（${f.aiDeclarationNote}）`);
     }
     lines.push('');
     if (exampleContent) {
