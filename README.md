@@ -184,6 +184,35 @@ node batch-screenshot.js --style-pack default --config demo/content.json --chann
 node batch-screenshot.js --style-pack default --config demo/content.json --channel chrome
 ```
 
+## ComfyUI 封面底图（自动管理）
+
+`batch-screenshot.js` **内置 ComfyUI 支持**。风格包配了 `coverBg` 段就会自动：检查 ComfyUI 在线（未运行且有 `startCmd` 则自动启动）→ 从 slides bgPrompt 提交生成 → 轮询出图 → 拷贝到 `Images/`。无需任何手动操作。
+
+### 智能管理脚本（comfyui 命令）
+
+首次运行（或 `comfyui` 命令不存在）时，`comfy-setup.js` 自动检测系统环境并生成平台适配的智能管理脚本：
+
+| 命令 | 作用 |
+|------|------|
+| `comfyui start` | 探测运行状态 → 未运行则后台启动 → 轮询就绪 |
+| `comfyui stop` | 优雅停止 → 未停则强杀兜底 |
+| `comfyui status` | 运行状态 + GPU/VRAM |
+
+- **Linux/macOS**：生成 bash 脚本 `~/.local/bin/comfyui`
+- **Windows**：生成 PowerShell 脚本 `~/.local/bin/comfyui.ps1`
+- 命令已存在时**直接使用，不覆盖**；检测失败可设 `COMFYUI_DIR` / `COMFYUI_PYTHON` 环境变量
+- 手动生成/查看报告：`node comfy-setup.js`
+
+### 延迟退出（自动释放显存）
+
+`comfy-lifecycle.js` 管理 ComfyUI 生命周期：**以最后一次脚本调用结束为准，闲置 30 分钟自动停止 ComfyUI**，释放 GPU 显存。
+
+- 仅管理脚本自己启动的实例——**用户手动启动的 ComfyUI 不会被自动关闭**
+- 队列中还有任务在渲染时自动顺延
+- 环境变量可调：`COMFYUI_IDLE_TIMEOUT_MS`（默认 1800000 = 30min）、`COMFYUI_STOP_CMD`、`COMFYUI_POLL_INTERVAL_MS`
+
+> **无 ComfyUI 环境**：风格包不配 `coverBg` 段即可，脚本自动跳过，封面使用渐变背景兜底。
+
 ## 安装（给 AI agent 使用）
 
 Snapflow 包含两个独立 Skill，安装后 AI agent（如 OpenCode）可自动调用。
