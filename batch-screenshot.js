@@ -315,21 +315,28 @@ function smartBreakTitle(text, maxUnits) {
   // 两行均衡模式：总宽 ≤ 2×maxUnits 时，只找一个最佳断点，两行都 ≤ maxUnits 且尽量均衡。
   // 优先断在标点/助词/空格后，其次单词边界，最后取均衡中点——绝不切成 3 行。
   if (widthOf(plain) <= maxUnits * 2) {
-    // 构建 plain 字符位置 → 是否紧跟高亮开标签的映射（断点应避开标签边界，防止 <em><br> 跨行截断高亮）
+    // 构建 plain 字符位置 → 标签边界映射：
+    //   tagNear[i]  = 字符 i 紧跟高亮开标签（断点应避开，防止 <em><br> 跨行截断高亮）
+    //   tagAfter[i] = 字符 i 前是闭标签（高亮词结束 = 语义段结束，优先在此断行）
     const tagNear = new Array(plain.length).fill(0);
+    const tagAfter = new Array(plain.length).fill(0);
     {
       let pi = 0;
       let pendingOpen = false;
+      let pendingClose = false;
       for (const tok of tokens) {
         if (tok.tag !== undefined) {
           const isOpen = tok.tag === '<em>' || tok.tag.startsWith('<span class="hl');
           if (isOpen) pendingOpen = true;
+          else if (tok.tag === '</em>' || tok.tag === '</span>') pendingClose = true;
           continue;
         }
         if (tok.text) {
           for (let k = 0; k < tok.text.length; k++, pi++) {
             if (pendingOpen) tagNear[pi] = 1;  // 该字符紧跟开标签
+            if (pendingClose && k === 0) tagAfter[pi] = 1;  // 该字符是闭标签后的第一个
             pendingOpen = false;
+            pendingClose = false;
           }
         }
       }
@@ -342,9 +349,10 @@ function smartBreakTitle(text, maxUnits) {
       if (firstW > maxUnits || secondW > maxUnits) continue;
       const prev = plain[i - 1];
       const next = plain[i] || '';
-      // 断点优先级：标点 > 空格 > 助词 > 单词边界 > 其他；同级内选两行最均衡的
+      // 断点优先级：高亮词结束（闭标签后）> 标点 > 空格 > 助词 > 单词边界 > 其他；同级内选两行最均衡的
       let score = 0;
-      if (puncts.includes(prev)) score = 100;
+      if (tagAfter[i]) score = 120;
+      else if (puncts.includes(prev)) score = 100;
       else if (prev === ' ' && !isWordChar(plain[i - 2] || '')) score = 80;
       else if (particles.includes(prev) && !isWordChar(next)) score = 60;
       else if (isWordChar(prev) !== isWordChar(next)) score = 40;
@@ -437,12 +445,20 @@ function mapPartsToTokens(tokens, parts) {
   const flushBr = (nextTok, nextTokIdx) => {
     let last = out[out.length - 1];
     const isOpenTag = t => t === '<em>' || (t && t.startsWith('<span class="hl'));
+    const isCloseTag = t => t === '</em>' || t === '</span>';
     // 场景1：断点后紧跟高亮开标签 → <br> 在开标签前（下一行以高亮开头，高亮完整），
     // 该 tag 已被消费，标记跳过外层循环的重复 push
     if (nextTok && isOpenTag(nextTok)) {
       if (nextTokIdx != null) tokens[nextTokIdx].consumed = true;
       out.push('<br>');
       out.push(nextTok);
+      return;
+    }
+    // 场景3：断点后紧跟高亮闭标签 → 高亮词完整收尾，闭标签跟上，<br> 放在闭标签之后
+    if (nextTok && isCloseTag(nextTok)) {
+      if (nextTokIdx != null) tokens[nextTokIdx].consumed = true;
+      out.push(nextTok);
+      out.push('<br>');
       return;
     }
     // 场景2：断点落在开标签后紧邻的文本处 → <br> 前移到标签前
