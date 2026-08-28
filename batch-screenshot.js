@@ -283,13 +283,18 @@ function cleanCoverPunct(text) {
  * 支持 <em> 高亮标签：文本与标签拆成 token，断行只作用在文本 token 上，绝不切进标签内部。
  */
 function smartBreakTitle(text, maxUnits) {
-  if (!text || text.includes('<br')) return text;
+  if (!text) return text;
+  // 手写 <br> 统一剥离（软断点提示不作数），引擎按容量重断成 ≤2 行
+  const stripBr = s => s.replace(/<br\s*\/?>/gi, '');
+  text = stripBr(text);
   // 拆 token：{tag: '<em>'} 或 {text: '文本'}，保持原文顺序
+  // 手写 <br> 是软断点提示：剥离不进 token（引擎统一重断成 ≤2 行），
+  // 其余标签（<em>/<span class="hl">）保留为 tag token 参与映射
   const tokens = [];
   let lastIdx = 0;
   for (const m of text.matchAll(/<[^>]+>/g)) {
     if (m.index > lastIdx) tokens.push({ text: text.slice(lastIdx, m.index) });
-    tokens.push({ tag: m[0] });
+    if (m[0].toLowerCase() !== '<br>') tokens.push({ tag: m[0] });
     lastIdx = m.index + m[0].length;
   }
   if (lastIdx < text.length) tokens.push({ text: text.slice(lastIdx) });
@@ -307,7 +312,59 @@ function smartBreakTitle(text, maxUnits) {
   // 单段即满足容量（含余量）→ 不拆
   if (widthOf(plain) <= maxUnits) return text;
 
-  // 在纯文本上计算断点（plain 中的字符位置）
+  // 两行均衡模式：总宽 ≤ 2×maxUnits 时，只找一个最佳断点，两行都 ≤ maxUnits 且尽量均衡。
+  // 优先断在标点/助词/空格后，其次单词边界，最后取均衡中点——绝不切成 3 行。
+  if (widthOf(plain) <= maxUnits * 2) {
+    // 构建 plain 字符位置 → 是否紧跟高亮开标签的映射（断点应避开标签边界，防止 <em><br> 跨行截断高亮）
+    const tagNear = new Array(plain.length).fill(0);
+    {
+      let pi = 0;
+      let pendingOpen = false;
+      for (const tok of tokens) {
+        if (tok.tag !== undefined) {
+          const isOpen = tok.tag === '<em>' || tok.tag.startsWith('<span class="hl');
+          if (isOpen) pendingOpen = true;
+          continue;
+        }
+        if (tok.text) {
+          for (let k = 0; k < tok.text.length; k++, pi++) {
+            if (pendingOpen) tagNear[pi] = 1;  // 该字符紧跟开标签
+            pendingOpen = false;
+          }
+        }
+      }
+    }
+    let best = -1;
+    let bestScore = -1;
+    for (let i = 1; i < plain.length; i++) {
+      const firstW = widthOf(plain.slice(0, i));
+      const secondW = widthOf(plain.slice(i));
+      if (firstW > maxUnits || secondW > maxUnits) continue;
+      const prev = plain[i - 1];
+      const next = plain[i] || '';
+      // 断点优先级：标点 > 空格 > 助词 > 单词边界 > 其他；同级内选两行最均衡的
+      let score = 0;
+      if (puncts.includes(prev)) score = 100;
+      else if (prev === ' ' && !isWordChar(plain[i - 2] || '')) score = 80;
+      else if (particles.includes(prev) && !isWordChar(next)) score = 60;
+      else if (isWordChar(prev) !== isWordChar(next)) score = 40;
+      else score = 10;
+      // 均衡加分：两行宽度差越小越好
+      score += Math.max(0, 20 - Math.abs(firstW - secondW));
+      // 标签邻近惩罚：断点后第一个字符紧跟高亮开标签 → 大降分（避免 <em><br>）
+      if (tagNear[i]) score -= 60;
+      if (score > bestScore) { bestScore = score; best = i; }
+    }
+    // 兜底：无任何合法断点时取中间点
+    if (best === -1) {
+      best = Math.floor(plain.length / 2);
+      while (best > 1 && widthOf(plain.slice(0, best)) > maxUnits) best--;
+    }
+    const parts = [plain.slice(0, best), plain.slice(best).trimStart()];
+    return mapPartsToTokens(tokens, parts);
+  }
+
+  // 超两行容量（> 2×maxUnits）：保留贪心切分，尽量压到最少行
   const parts = [];
   let rest = plain;
   while (widthOf(rest) > maxUnits) {
@@ -365,34 +422,49 @@ function smartBreakTitle(text, maxUnits) {
     rest = rest.slice(cut).trimStart();
   }
   parts.push(rest);
+  return mapPartsToTokens(tokens, parts);
+}
 
-  // 把纯文本断点映射回 token 流：逐段消费 plain 文本，遇到断点插 <br>
-  // 断点若落在文本 token 开头（即 <em> 刚开启、尚未输出任何文本），
-  // 说明 <br> 会插进 <em> 内部——此时把 <br> 前移到该 <em> 之前，保持高亮完整
+// 把纯文本断点映射回 token 流：逐段消费 plain 文本，遇到断点插 <br>
+// 断点若落在文本 token 开头（即 <em> 刚开启、尚未输出任何文本），
+// 说明 <br> 会插进 <em> 内部——此时把 <br> 前移到该 <em> 之前，保持高亮完整
+function mapPartsToTokens(tokens, parts) {
   const out = [];
   let partIdx = 0;
   let partRemain = parts[0] ? parts[0].length : 0;
-  const flushBr = () => {
-    // 若输出末尾是 <em>（断点落在 em 开标签后、文本前），把 <br> 插到 <em> 前面
-    if (out[out.length - 1] === '<em>') {
-      out.splice(out.length - 1, 0, '<br>');
-    } else {
+  // nextTok 是断点处紧随其后的 token：若为高亮开标签（<em> / <span class="hl">），
+  // <br> 放到标签之后（下一行以高亮开头），避免 <em><br>文本</em> 跨行截断高亮
+  const flushBr = (nextTok, nextTokIdx) => {
+    let last = out[out.length - 1];
+    const isOpenTag = t => t === '<em>' || (t && t.startsWith('<span class="hl'));
+    // 场景1：断点后紧跟高亮开标签 → <br> 在开标签前（下一行以高亮开头，高亮完整），
+    // 该 tag 已被消费，标记跳过外层循环的重复 push
+    if (nextTok && isOpenTag(nextTok)) {
+      if (nextTokIdx != null) tokens[nextTokIdx].consumed = true;
       out.push('<br>');
+      out.push(nextTok);
+      return;
     }
+    // 场景2：断点落在开标签后紧邻的文本处 → <br> 前移到标签前
+    if (last && typeof last === 'string' && !last.startsWith('<')) {
+      const prev = out[out.length - 2];
+      if (isOpenTag(prev)) {
+        out.splice(out.length - 2, 0, '<br>');
+        return;
+      }
+    }
+    out.push('<br>');
   };
-  for (const tok of tokens) {
+  for (let ti = 0; ti < tokens.length; ti++) {
+    const tok = tokens[ti];
     if (tok.tag !== undefined) {
+      if (tok.consumed) continue;
       out.push(tok.tag);
       continue;
     }
     const t = tok.text;
     let i = 0;
     while (i < t.length) {
-      if (partRemain === 0 && partIdx < parts.length - 1) {
-        partIdx++;
-        partRemain = parts[partIdx].length;
-        flushBr();
-      }
       // 保护：parts 已耗尽（最后一个 part 被消费完）时，剩余文本直接追加，
       // 避免 take=0 死循环导致 Invalid array length
       if (partRemain <= 0) {
@@ -403,6 +475,19 @@ function smartBreakTitle(text, maxUnits) {
       out.push(t.slice(i, i + take));
       partRemain -= take;
       i += take;
+      // 消费完一个 part（且不是最后一个）：立即处理断点。
+      // 预判下一个 token——若是高亮开标签，<br> 放到标签后；否则正常 flush。
+      // 在消费当下处理（而非等到下一轮 while），保证断点贴着 part 边界
+      if (partRemain === 0 && partIdx < parts.length - 1) {
+        partIdx++;
+        partRemain = parts[partIdx].length;
+        let nextTok = null, nextTokIdx = null;
+        for (let nt = ti + 1; nt < tokens.length; nt++) {
+          if (tokens[nt].tag !== undefined) { nextTok = tokens[nt].tag; nextTokIdx = nt; break; }
+          if (tokens[nt].text && tokens[nt].text.length > 0) break;
+        }
+        flushBr(nextTok, nextTokIdx);
+      }
     }
   }
   return out.join('');
@@ -770,11 +855,9 @@ function injectTypography(vars, type, keys) {
 
 function fillCoverVars(img, type, vars) {
   // 主/副标题最多两行：按字符数与可用宽度反推字号（两行容量 ≥ 长度 → 字号），再按该字号断行
-  // 模板实测：标题容器 = 页面宽 × 90%（private/cover.html .main-title-container width:90%），
-  // 中文渲染宽度 ≈ 1.02×字号（font-weight 700 + letter-spacing 2px 实测每字 110px @ 108px），
-  // 容量系数 0.93 留安全余量（防字体差异导致末字折行）
-  const availW = getCfgScreenshotWidth() * 0.9;
-  const fitFactor = 0.93;
+  // 容器宽度 = 页面全宽（模板 .main-title-container 已对齐 100%），不留余量
+  const availW = getCfgScreenshotWidth() * 1.0;
+  const fitFactor = 1.0;
   const baseTitleFs = parseFloat(SP?.typography?.cover?.title || '72') || 72;
   const baseSubFs = parseFloat(SP?.typography?.cover?.subtitle || '40') || 40;
   // 封面标点清洗（铁律兜底）：先清洗再断行，避免标点影响宽度计算
@@ -784,11 +867,11 @@ function fillCoverVars(img, type, vars) {
   // 断行：从基准字号开始，若行数 >2 则降字号重断（每轮容量增大），直至两行内
   // 容量换算：maxUnits(单位) = 容器px×系数 / (字号px × 1.02)，1.02 为中文渲染宽实测系数（含 letter-spacing）
   const fitTitle = (fs) => {
-    const maxUnits = Math.max(6, Math.floor(availW * fitFactor / (Math.max(24, fs) * 1.02)));
+    const maxUnits = Math.max(6, availW * fitFactor / (Math.max(24, fs) * 1.02));
     return smartBreakTitle(titleRaw, maxUnits);
   };
   const fitSub = (fs) => {
-    const maxUnits = Math.max(10, Math.floor(availW * fitFactor / (Math.max(20, fs) * 1.02)));
+    const maxUnits = Math.max(10, availW * fitFactor / (Math.max(20, fs) * 1.02));
     return smartBreakTitle(subRaw, maxUnits);
   };
   // 自适应降字号仅当风格包 typography.cover.autoFit=true（头条 30 字标题需要）；
