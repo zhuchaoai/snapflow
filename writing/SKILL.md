@@ -16,10 +16,26 @@ compatibility: opencode
 本 Skill 启动时并行读取以下文件，作为上下文：
 
 1. 当前风格包（通过 `--style-pack` 指定或 resolver 自动选择；config.yaml 已移除，风格包是唯一配置源）
-2. 从风格包 JSON 提取 **`writing` 段**作为写稿约束（标题规则、字数、emoji、语气、anti-AI slop、**style_anchor 风格锚**等），同时提取 **`quality` 段**作为质量标准（数据真实性、逻辑一致性、素材优先级）；如风格包有 `writing.writingRules` 路径，一并读取该规则文件。**style_anchor 五条必须逐条对照应用**（直接进场景/数字是骨架/转折有人物/金句带情绪/收尾给行动）。**风格基准唯一：只参照规范中的 003 样板稿，禁止参照其他期次稿件**。**封面铁律：title/subtitle/tagline 禁止手写 `<br>`、禁止标点（金句靠空格断句），违反 = 返工**
+2. 从风格包 JSON 提取 **`writing` 段**作为写稿约束（标题规则、字数、emoji、语气、anti-AI slop、**style_anchor 风格锚**等），同时提取 **`quality` 段**作为质量标准（数据真实性、逻辑一致性、素材优先级）；如风格包有 `writing.writingRules` 路径，一并读取该规则文件。**style_anchor 五条必须逐条对照应用**（直接进场景/数字是骨架/转折有人物/金句带情绪/收尾给行动）。**风格基准唯一：只参照规范文件（writingRules）中定义的样板稿，禁止参照其他期次稿件**。**封面铁律：title/subtitle/tagline 禁止手写 `<br>`、禁止标点（金句靠空格断句），违反 = 返工**
 3. `manuscript-template.md` — 完整稿子格式模板（含 YAML 头部、正文规范、Slides 数据区每种 type 的写法）
 4. `workflows/02-write-draft.md` — 写稿流程详情
 5. `workflows/03-generate-images.md` — 配图流程详情
+
+---
+
+## 配置自己的写稿规范（可选）
+
+项目不内置写稿样板稿。你的规范文件（含风格锚样板、内容结构骨架）放在你自己项目里，在风格包 `writing.writingRules` 配置路径即可加载：
+
+```json
+// style-pack.json 的 writing 段
+"writing": {
+  "writingRules": "/path/to/你的规范文件.md",
+  "...": "其余写稿约束"
+}
+```
+
+项目只提供加载机制，不提供规范内容——写稿口味由各用户的规范文件决定。
 
 ---
 
