@@ -349,18 +349,20 @@ function smartBreakTitle(text, maxUnits) {
       if (firstW > maxUnits || secondW > maxUnits) continue;
       const prev = plain[i - 1];
       const next = plain[i] || '';
-      // 断点优先级：高亮词结束（闭标签后）> 标点 > 空格 > 助词 > 单词边界 > 其他；同级内选两行最均衡的
+      // 断点优先级：空格/标点（agent 语义断句标注）> 高亮词结束（闭标签后）> 助词 > 单词边界 > 其他；
+      // 空格是封面铁律要求 agent 手写的语义断点，最高优先，必须尊重
       let score = 0;
-      if (tagAfter[i]) score = 120;
-      else if (puncts.includes(prev)) score = 100;
-      else if (prev === ' ' && !isWordChar(plain[i - 2] || '')) score = 80;
+      if (prev === ' ' && !isWordChar(plain[i - 2] || '')) score = 130;
+      else if (puncts.includes(prev)) score = 120;
+      else if (tagAfter[i]) score = 100;
       else if (particles.includes(prev) && !isWordChar(next)) score = 60;
       else if (isWordChar(prev) !== isWordChar(next)) score = 40;
       else score = 10;
       // 均衡加分：两行宽度差越小越好
       score += Math.max(0, 20 - Math.abs(firstW - secondW));
-      // 标签邻近惩罚：断点后第一个字符紧跟高亮开标签 → 大降分（避免 <em><br>）
-      if (tagNear[i]) score -= 60;
+      // 标签邻近惩罚：断点后第一个字符紧跟高亮开标签 → 大降分（避免 <em><br>）；
+      // 空格后的断点豁免——空格是 agent 明确断句意图，下一行以高亮词开头是正常排版
+      if (tagNear[i] && prev !== ' ' && !puncts.includes(prev)) score -= 60;
       if (score > bestScore) { bestScore = score; best = i; }
     }
     // 兜底：无任何合法断点时取中间点
