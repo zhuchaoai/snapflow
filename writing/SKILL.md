@@ -88,7 +88,7 @@ Phase 2: 批量配图（调用 screenshot skill）
 | 类型 | 必填 | 关键字段 |
 |:----|:-----|:---------|
 | `cover` | ✅ | `title`/`subtitle`（核心词用`<em>`包起来渐变高亮，位置不固定）, `tagline`, `badges`(带emoji), `bgPrompt` |
-| `content` | ✅ | `pageNum`, `sectionTitle`, `cards[{icon,title,desc}]` |
+| `content` | ✅ | `pageNum`, `sectionTitle`, `cards[{icon,title,desc}]`（title/desc 用 `**词**` 包核心词 → 马克笔荧光高亮） |
 | `data` | ✅ | `pageNum`, `sectionTitle`, `stats[{value,label,highlight}]` |
 | `text` | ✅ | `pageNum`, `sectionTitle`, `lines[{text,highlight}]` |
 | `compare` | ✅ | `pageNum`, `sectionTitle`, `leftItems/rightItems`, `summaryText` |
