@@ -527,14 +527,57 @@ function buildLogoDecorHTML(decors) {
   }).join('\n      ');
 }
 
-function buildCardsHTML(cards) {
+// 正文关键词高亮：Markdown 加粗 **词** → <span class="hl">词</span>（写稿侧零负担，
+// agent 天然用 ** 强调重点；模板 .hl 样式负责马克笔/荧光笔视觉）
+function inlineHighlight(text) {
+  if (!text) return text;
+  return String(text).replace(/\*\*(.+?)\*\*/g, '<span class="hl">$1</span>');
+}
+
+// 卡片序号角标：按序号生成「01」「坑1」「✅1」等角标文字（传 formatter 可定制）
+// startIdx = 卡片起始序号（多页续接时用）；decor 携带卡片角度/错位（贴纸包消费）
+function buildCardsHTML(cards, startIdx, decor) {
   if (!cards || !cards.length) return '';
-  return cards.map(c => `
-    <div class="card">
+  // 序号角标 + 随机角度仅贴纸布局（pack.layout=sticker）启用；其他包保持原始卡片结构
+  const isSticker = SP?.pack?.layout === 'sticker';
+  const rots = isSticker ? (decor?.cardRotations || []) : [];
+  const offs = isSticker ? (decor?.cardOffsets || []) : [];
+  return cards.map((c, i) => {
+    const num = String((startIdx || 0) + i + 1).padStart(2, '0');
+    const rotStyle = isSticker && rots[i] != null ? ` style="transform: rotate(${rots[i]}deg) translateY(${offs[i] || 0}px);"` : '';
+    const numBadge = isSticker ? `<span class="c-num">${num}</span>` : '';
+    return `
+    <div class="card"${rotStyle}>
+      ${numBadge}
       <div class="c-icon">${c.icon || ''}</div>
-      <div class="c-title">${c.title || ''}</div>
-      <div class="c-desc">${c.desc || ''}</div>
-    </div>`).join('\n    ');
+      <div class="c-title">${inlineHighlight(c.title || '')}</div>
+      <div class="c-desc">${inlineHighlight(c.desc || '')}</div>
+    </div>`;
+  }).join('\n    ');
+}
+
+// 页面级装饰基础 CSS：贴纸包模板用 {{DECOR_CSS}} 引入（dot/sparkle/tape 定位规则）。
+// 装饰元素实际坐标由 DECOR_HTML 内联注入；此处只给基础类定义 position/形状。
+// 其他包模板无 {{DECOR_CSS}} 占位符 → 不注入，零影响
+const DECOR_CSS = `
+.deco-dot, .deco-sparkle, .deco-tape { position: absolute; pointer-events: none; z-index: 1; }
+.deco-dot { border-radius: 50%; opacity: 0.85; }
+.deco-sparkle { font-weight: 900; opacity: 0.9; text-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+.deco-tape { border-left: 2px dashed rgba(255,160,60,0.45); border-right: 2px dashed rgba(255,160,60,0.45); box-shadow: 0 4px 14px rgba(180,120,40,0.14); }`;
+
+// 页面级装饰元素：content.json 的 decor.decors（dot/sparkle/tape 坐标随机化）。
+// 贴纸包模板用 {{DECOR_HTML}} 注入；其他包模板无此占位符 → 变量不消费，零影响
+function buildDecorHTML(decors) {
+  if (!decors || !decors.length) return '';
+  return decors.map((d, i) => {
+    if (d.type === 'tape') {
+      return `<div class="deco-tape" style="left:${d.left}px; top:${d.top}px; width:${d.size * 8}px; height:${d.size * 2}px; transform:rotate(${d.rotate}deg); background:${d.color}; opacity:0.55;"></div>`;
+    }
+    if (d.type === 'sparkle') {
+      return `<div class="deco-sparkle" style="left:${d.left}px; top:${d.top}px; font-size:${d.size + 16}px; color:${d.color}; transform:rotate(${d.rotate}deg);">✦</div>`;
+    }
+    return `<div class="deco-dot" style="left:${d.left}px; top:${d.top}px; width:${d.size}px; height:${d.size}px; background:${d.color};"></div>`;
+  }).join('\n  ');
 }
 
 function buildTextLinesHTML(lines) {
@@ -949,7 +992,7 @@ function fillContentVars(img, type, vars) {
   vars.CARD_BG_COLOR = colors.cardBg || getTypeColor(type, 'cardBg');
   vars.CARD_TITLE_COLOR = colors.cardTitle || getTypeColor(type, 'cardTitle');
   vars.CARD_DESC_COLOR = colors.cardDesc || getTypeColor(type, 'cardDesc');
-  vars.CARDS_HTML = buildCardsHTML(img.cards);
+  vars.CARDS_HTML = buildCardsHTML(img.cards, 0, img.decor);
   injectTypography(vars, type, ['pageNum', 'sectionTitle', 'cardTitle', 'cardDesc', 'iconSize', 'cardRadius']);
   const a = getTypeColor(type, 'accent');
   const [r,g,b] = hexToRgb(a);
@@ -1119,6 +1162,9 @@ function generateHTML(config, articleDir, onlyFiles, outDirOverride) {
 
     // 公共变量（所有类型通用）
     vars.BRAND_NAME = getCfgBrandName();
+    // 页面级装饰（decor 消费：贴纸包用；无 decor 或模板无占位符 → 零影响）
+    vars.DECOR_HTML = buildDecorHTML(img.decor?.decors);
+    vars.DECOR_CSS = DECOR_CSS;
     vars.FONT_FAMILY = SP?.typography?.fontFamily || '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif';
     vars.PAGE_BG = getCfgPageBg();
     const bottomBarGradient = getCfgBottomBarGradient(type);

@@ -145,6 +145,66 @@ function buildJson(items, meta, mdPath, stylePack) {
   const naming = stylePack?.coverBg?.naming || {};
   const abbrMap = naming.abbrMap || {};
 
+  // ─── 确定性随机装饰（decor）：seed = filename hash → 同文件同布局，可复现。
+  // 所有包共用同一 decor 字段（数据层常驻）；模板可选消费——贴纸包读它做错落排版，
+  // 其他包模板不读则无感。改文件名/换内容顺序 → seed 变 → 布局自然变化。
+  const hashSeed = s => {
+    let h = 2166136261;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  };
+  const mulberry32 = a => () => {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  // 生成贴纸风装饰：卡片角度 ±2° 不重复、上下错位、装饰点坐标（基于 seed 稳定）
+  const buildDecor = (filename, type) => {
+    const seed = hashSeed(filename || '');
+    const rnd = mulberry32(seed);
+    const cardCount = { content: 3, compare: 2 }[type] || 0;
+    const cardRotations = [];
+    const cardOffsets = [];
+    let lastRot = null;
+    for (let i = 0; i < cardCount; i++) {
+      let rot = (rnd() * 4 - 2).toFixed(1);
+      if (lastRot !== null) {
+        let guard = 0;
+        while (Math.abs(parseFloat(rot) - lastRot) < 0.8 && guard++ < 10) rot = (rnd() * 4 - 2).toFixed(1);
+      }
+      lastRot = parseFloat(rot);
+      cardRotations.push(rot);
+      cardOffsets.push(Math.round(rnd() * 12 - 6));
+    }
+    const decors = [];
+    const dotColors = ['#FFB36B', '#7ED6C0', '#8F7BFF', '#FF9A5C', '#FF7E9D', '#FFD682'];
+    const nDecor = 3 + Math.floor(rnd() * 3);   // 3~5 个装饰点
+    const used = [];
+    for (let i = 0; i < nDecor; i++) {
+      const pos = [
+        { region: 'top', left: 60 + rnd() * 260, top: 80 + rnd() * 180 },
+        { region: 'bottom', left: 60 + rnd() * 260, top: 1280 + rnd() * 240 },
+        { region: 'right', left: 950 + rnd() * 160, top: 300 + rnd() * 800 },
+        { region: 'left', left: 40 + rnd() * 80, top: 400 + rnd() * 600 },
+      ][i % 4];
+      used.push(pos);
+      decors.push({
+        type: i % 3 === 0 ? 'dot' : (i % 3 === 1 ? 'sparkle' : 'tape'),
+        color: dotColors[Math.floor(rnd() * dotColors.length)],
+        left: Math.round(pos.left), top: Math.round(pos.top),
+        size: 10 + Math.round(rnd() * 16),
+        rotate: Math.round(rnd() * 36 - 18),
+      });
+    }
+    return {
+      seed,
+      cardRotations,
+      cardOffsets,
+      decors,
+    };
+  };
+
   // assetType: slides YAML 顶层字段 > 目录名匹配（向后兼容）> 默认
   const overrideType = meta.assetType || '';
   const assetFromDir = p => {
@@ -237,6 +297,8 @@ function buildJson(items, meta, mdPath, stylePack) {
           Object.assign(img, { pageNum: item.pageNum, sectionTitle: item.sectionTitle, footerText: item.footerText || '', items: item.items || [] });
           break;
       }
+      // decor 数据层常驻：所有非 cover 类型都生成（cover 布局自洽不需要）
+      if (item.type !== 'cover') img.decor = buildDecor(filename, item.type);
       return img;
     })
   };
