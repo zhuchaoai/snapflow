@@ -444,20 +444,22 @@ function mapPartsToTokens(tokens, parts) {
   let partRemain = parts[0] ? parts[0].length : 0;
   // nextTok 是断点处紧随其后的 token：若为高亮开标签（<em> / <span class="hl">），
   // <br> 放到标签之后（下一行以高亮开头），避免 <em><br>文本</em> 跨行截断高亮
-  const flushBr = (nextTok, nextTokIdx) => {
+  const flushBr = (nextTok, nextTokIdx, atTokenBoundary) => {
     let last = out[out.length - 1];
     const isOpenTag = t => t === '<em>' || (t && t.startsWith('<span class="hl'));
     const isCloseTag = t => t === '</em>' || t === '</span>';
     // 场景1：断点后紧跟高亮开标签 → <br> 在开标签前（下一行以高亮开头，高亮完整），
-    // 该 tag 已被消费，标记跳过外层循环的重复 push
-    if (nextTok && isOpenTag(nextTok)) {
+    // 该 tag 已被消费，标记跳过外层循环的重复 push。
+    // 仅当断点落在 token 边界（当前文本 token 已消费完）时才成立——
+    // 若断点在文本中间，剩余文本必须在标签前输出，前移标签会把剩余文本错包进高亮
+    if (atTokenBoundary && nextTok && isOpenTag(nextTok)) {
       if (nextTokIdx != null) tokens[nextTokIdx].consumed = true;
       out.push('<br>');
       out.push(nextTok);
       return;
     }
     // 场景3：断点后紧跟高亮闭标签 → 高亮词完整收尾，闭标签跟上，<br> 放在闭标签之后
-    if (nextTok && isCloseTag(nextTok)) {
+    if (atTokenBoundary && nextTok && isCloseTag(nextTok)) {
       if (nextTokIdx != null) tokens[nextTokIdx].consumed = true;
       out.push(nextTok);
       out.push('<br>');
@@ -495,16 +497,19 @@ function mapPartsToTokens(tokens, parts) {
       i += take;
       // 消费完一个 part（且不是最后一个）：立即处理断点。
       // 预判下一个 token——若是高亮开标签，<br> 放到标签后；否则正常 flush。
-      // 在消费当下处理（而非等到下一轮 while），保证断点贴着 part 边界
+      // 在消费当下处理（而非等到下一轮 while），保证断点贴着 part 边界。
+      // atTokenBoundary：当前文本 token 是否已消费完（i>=t.length）——只有 token
+      // 边界处的断点才允许高亮标签前移；文本中断点不做标签预判，防剩余文本错包进高亮
       if (partRemain === 0 && partIdx < parts.length - 1) {
         partIdx++;
         partRemain = parts[partIdx].length;
+        const atTokenBoundary = i >= t.length;
         let nextTok = null, nextTokIdx = null;
         for (let nt = ti + 1; nt < tokens.length; nt++) {
           if (tokens[nt].tag !== undefined) { nextTok = tokens[nt].tag; nextTokIdx = nt; break; }
           if (tokens[nt].text && tokens[nt].text.length > 0) break;
         }
-        flushBr(nextTok, nextTokIdx);
+        flushBr(nextTok, nextTokIdx, atTokenBoundary);
       }
     }
   }
@@ -935,6 +940,23 @@ function fillCoverVars(img, type, vars) {
     const maxUnits = Math.max(10, availW * fitFactor / (Math.max(20, fs) * 1.02));
     return smartBreakTitle(subRaw, maxUnits);
   };
+  // 硬闸门：断行是否落在"语义断点"上（空格后 或 高亮词结束后）。
+  // 若某 <br> 前后是连续汉字（无空格、无 </em> 边界）→ 引擎被迫拆词 =
+  // 标题未按语义断句标注，拦截报错，让写稿侧加空格重写
+  const assertSemanticBreak = (raw, text, what) => {
+    if (text.match(/<br>/g) && raw && !raw.includes(' ') && !raw.includes('<br')) {
+      // 原文无空格且无手写 <br>，却被断行：检查每个 br 是否都紧跟在高亮闭标签后
+      const parts = text.split('<br>');
+      for (let pi = 0; pi < parts.length - 1; pi++) {
+        const seg = parts[pi];
+        const afterHl = /<\/em>|<\/span>$/.test(seg.trim());
+        if (!afterHl) {
+          return `✗ 封面${what}需断行但未按语义标注断点（无空格/无高亮词边界）：「${raw.slice(0, 30)}${raw.length > 30 ? '…' : ''}」→ 请按语义加空格，如「前半句 后半句」`;
+        }
+      }
+    }
+    return null;
+  };
   // 自适应降字号仅当风格包 typography.cover.autoFit=true（头条 30 字标题需要）；
   // 小红书 20 字标题断点换行 2 行内，保持基准字号（默认 false 不降）
   const autoFit = SP?.typography?.cover?.autoFit === true;
@@ -954,6 +976,10 @@ function fillCoverVars(img, type, vars) {
       subText = fitSub(subFs);
     }
   }
+  // 硬闸门：标题若被断行，必须断在语义断点（空格/高亮边界）上；
+  // 被迫拆词（连续汉字中被断开）→ 报错拦截，不出错误图，让写稿侧加空格重写
+  const gateErr = assertSemanticBreak(titleRaw, titleText, '主标题');
+  if (gateErr) throw new Error(gateErr);
   vars.TITLE = titleText;
   vars.SUBTITLE = subText;
   vars.PILL_NAME = img.pill || '';
