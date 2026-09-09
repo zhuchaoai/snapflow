@@ -18,7 +18,7 @@ compatibility: opencode
 1. 当前风格包（通过 `--style-pack` 指定或 resolver 自动选择；config.yaml 已移除，风格包是唯一配置源）
 2. 从风格包 JSON 提取 **`writing` 段**作为写稿约束（标题规则、字数、emoji、语气、anti-AI slop、**style_anchor 风格锚**等），同时提取 **`quality` 段**作为质量标准（数据真实性、逻辑一致性、素材优先级）；如风格包有 `writing.writingRules` 路径，一并读取该规则文件。**style_anchor 五条必须逐条对照应用**（直接进场景/数字是骨架/转折有人物/金句带情绪/收尾给行动）。**风格基准唯一：只参照规范文件（writingRules）中定义的样板稿，禁止参照其他期次稿件**
 3. `manuscript-template.md` — 完整稿子格式模板（含 YAML 头部、正文规范、Slides 数据区每种 type 的写法）
-4. `cover-title-rules.md` — **封面标题断句规则（唯一权威源）**：禁止 `<br>`/标点；断句空格加在 Slides 区 title/subtitle/tagline 值里（正文无效）；超宽无空格会被引擎拦截
+4. `cover-title-rules.md` — **封面断句规则（唯一权威源）**：约束仅限封面截图版（Slides 区 title/subtitle/tagline）——无标点+空格断句+`<em>`高亮；**正文标题正常用标点不受此限**；超宽无空格会被引擎拦截
 5. `workflows/02-write-draft.md` — 写稿流程详情
 6. `workflows/03-generate-images.md` — 配图流程详情
 
